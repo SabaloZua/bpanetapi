@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Telefone {
+  n_id_telefone Int     @id @default(autoincrement())
+  n_numero      Int?
+  t_descricao   String? @db.VarChar
+  n_Idcliente   Int
+  cliente       cliente @relation(fields: [n_Idcliente], references: [n_Idcliente], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model cartao {
+  n_Idcartao     Int     @id @default(autoincrement())
+  t_descricao    String? @db.VarChar
+  t_datavalidade String? @db.VarChar
+  n_Idconta      Int
+  t_estado       String? @db.VarChar
+  t_numero      String?
+  conta          conta   @relation(fields: [n_Idconta], references: [n_Idconta], onDelete: NoAction, onUpdate: NoAction)
+}
+
+
+model cliente {
+  n_Idcliente    Int              @id @default(autoincrement())
+  t_nomeclient   String?          @db.VarChar
+  t_datanasci    String?          @db.VarChar
+  n_adesao       Int?
+  t_BI           String?          @db.VarChar @unique
+  t_password     String?
+  t_ocupacao     String?          @db.VarChar
+  n_Idmorada     Int
+  t_codigo2fa       String?
+  Telefone       Telefone[]
+  morada         morada           @relation(fields: [n_Idmorada], references: [n_Idmorada], onDelete: NoAction, onUpdate: NoAction)
+  conta          conta[]
+  dispositivo    dispositivo[]
+  client_email       client_email[]
+  images_cliente images_cliente[]
+}
+model client_email {
+  n_email_id      Int           @id(map: "user_email_pkey") @default(autoincrement())
+  t_email_address String       @db.VarChar @unique 
+  t_verified      Boolean       @default(false)
+  n_Idcliente     Int?          @db.SmallInt
+  t_token         String?
+  cliente        cliente?       @relation(fields: [n_Idcliente], references: [n_Idcliente], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_id")
+}
+model conta {
+  n_Idconta      Int        @id @default(autoincrement())
+  t_Iban         String?
+  t_Nba          String?
+  t_numeroconta  String?
+  n_saldo        Float      @default(0)
+  t_estado       String?    @db.VarChar
+  t_dataAbertura String?    @db.VarChar
+  n_Idcliente    Int
+  n_Idtipoconta  Int
+  cartao         cartao[]
+  cliente        cliente    @relation(fields: [n_Idcliente], references: [n_Idcliente], onDelete: NoAction, onUpdate: NoAction)
+  tipo_cota      tipo_cota  @relation(fields: [n_Idtipoconta], references: [n_Idtipoconta], onDelete: NoAction, onUpdate: NoAction)
+  trasacao       trasacao[]
+  LevantamentoSemCartao LevantamentoSemCartao[]
+}
+
+model dispositivo {
+  t_Iddispositivo    String     @id
+  n_Idcliente       Int
+  t_sistemaoperativo String? @db.VarChar
+  t_navegador        String? @db.VarChar
+  cliente            cliente @relation(fields: [n_Idcliente], references: [n_Idcliente], onDelete: NoAction, onUpdate: NoAction)
+@@index([n_Idcliente, t_Iddispositivo])
+}
+
+model images_cliente {
+  n_idimagesn Int     @id @default(autoincrement())
+  n_Idcliente Int
+  t_descricao String? @db.VarChar
+  t_caminho   String?
+  cliente     cliente @relation(fields: [n_Idcliente], references: [n_Idcliente], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model morada {
+  n_Idmorada  Int       @id @default(autoincrement())
+  t_rua       String?   @db.VarChar
+  t_bairro    String?   @db.VarChar
+  t_municipio String?   @db.VarChar
+  cliente     cliente[]
+}
+
+model tipo_cota {
+  n_Idtipoconta Int     @id @default(autoincrement())
+  t_descricao   String? @db.VarChar
+  conta         conta[]
+}
+
+model trasacao {
+  n_Idtrasacao   Int     @id @default(autoincrement())
+  n_contaorigem  Int
+  n_contadestino Int?
+  n_valor        Int?
+  t_descricao    String?
+  t_datatrasacao String? @db.VarChar
+  n_saldoactual  Int?
+  conta          conta   @relation(fields: [n_contaorigem], references: [n_Idconta], onDelete: NoAction, onUpdate: NoAction)
+}
+model LevantamentoSemCartao {
+  n_Idlevantamento   Int      @id @default(autoincrement())
+  n_Idconta          Int
+  n_valor            Int
+  t_pin         String   @db.VarChar(10)
+  t_referencia       String   @db.VarChar
+  t_estado           String   @default("pendente")
+  t_data_solicitacao DateTime @default(now())
+  t_data_expiracao   DateTime? 
+  conta              conta    @relation(fields: [n_Idconta], references: [n_Idconta], onDelete: NoAction, onUpdate: NoAction)
+}

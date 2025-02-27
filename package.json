@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "@prisma/client": "^6.3.1",
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.4",
+    "@types/nodemailer": "^6.4.17",
+    "@types/puppeteer": "^5.4.7",
+    "axios": "^1.7.9",
+    "bcrypt": "^5.1.1",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "html-pdf": "^3.0.1",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.10.0",
+    "prisma": "^6.3.1",
+    "puppeteer": "^24.2.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "scripts": {
+    "dev": "tsx watch --env-file .env app.ts"
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.1.5",
+    "@types/html-pdf": "^3.0.3"
+  }
+}
