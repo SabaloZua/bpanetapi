@@ -7,6 +7,6 @@ const Controller=new ControllerAdessao();
 Router.post('/emailvalidate',Controller.SendvalideEmail);// parametros email
 Router.get('/validatEmail/:email/:tolken',Controller.ValideteEmail);
 Router.post('/Sendcredential',Controller.generatecredentias); // parametros email, navegador, sistemaoperativo
-Router.post('/findAccounts',Controller.findAccounts); // parametros, email numeroconta, bi,
+Router.post('/findAccounts/:email',Controller.findAccounts); // parametros, numeroconta, bi,
 
 export default Router;

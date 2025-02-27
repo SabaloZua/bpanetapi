@@ -57,8 +57,8 @@ export default class ControllerAdessao {
     try {
       // Obtém os dados do corpo da requisição
       const biclient = req.body.bi;
-      const numeroconta= req.body.conta;
-      const email = req.body.email;
+      const numeroconta= req.body.numeroconta;
+      const email = req.params.email;
 
       // Busca o email do cliente no banco de dados
       const client_email=await prisma.client_email.findFirst({
@@ -74,9 +74,8 @@ export default class ControllerAdessao {
           }
         }
       })
-
       // Verifica se o número do BI está associado ao cliente que por sua vez está associado a uma conta
-      if(client_email?.cliente?.n_Idcliente!=biclient){
+      if(client_email?.cliente?.t_BI!=biclient){
         res.status(400).json({message:"Este numero do Bi na se encontra associado a  sua conta"})
         return
       }
@@ -133,7 +132,7 @@ export default class ControllerAdessao {
       }
     })
 
-    res.redirect('http://localhost:3000/adesao-dados')
+    res.redirect('http://localhost:3000/adesao/dados')
   }
 
   public generatecredentias = async (req: Request, res: Response): Promise<void> => {
@@ -165,7 +164,7 @@ export default class ControllerAdessao {
       });
       const dispositivo = await prisma.dispositivo.create({
         data: {
-          t_Iddispositivo: "202",
+          t_Iddispositivo: "20200",
           cliente: { connect: { n_Idcliente: client_email?.n_Idcliente || 0 } },
           t_navegador: navegador,
           t_sistemaoperativo: sistemaoperativo
@@ -179,7 +178,7 @@ export default class ControllerAdessao {
       });
     } catch (error) {
       res.status(400).json({
-        message: "erro ao processar a solicitação Tenete novamente mais tarde"
+        message: "erro ao processar a solicitação Tenete novamente mais tarde"+error
 
       })
     }
