@@ -6,7 +6,7 @@ const Controller=new ControllerAdessao();
 // Parâmetros esperados no corpo da requisição: email
 Router.post('/emailvalidate',Controller.sendvalideemail);
 
-Router.get('/validatEmail/:email/:tolken',Controller.valideteemail);
+Router.get('/validatemail/:email/:tolken',Controller.valideteemail);
 
 // Parâmetros esperados no corpo da requisição: numeroconta, bi, TODO STRING
 Router.post('/findaccounts/:email',Controller.findaccounts); 
