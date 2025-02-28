@@ -16,7 +16,7 @@ telefonecliente:É DO TIPO INTEIRO,
 datanasci, 
 numerobi, ocupacao, rua, municipio, bairro . !TODO O RESTO É STRING
 */
-Routes.post('/createCliente', Controller.createclient);
+Routes.post('/createcliente', Controller.createclient);
 
 
 // Parâmetros esperados no corpo da requisição: email, navegador, sistemaoperativo iddispositivo

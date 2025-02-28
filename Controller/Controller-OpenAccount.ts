@@ -93,6 +93,13 @@ export default class CredenciaisController {
         try {
 
             const { nomecliente, emailcliente, telefonecliente, datanasci, numerobi, ocupacao, rua, municipio, bairro } = req.body;
+            const  vifirybi=await prisma.cliente.findFirst({
+                where:{t_BI:numerobi.toString()}
+            })
+            if(vifirybi){
+                res.status(400).json({message:'Este numero do BI já se encontra associado a outra conta'});
+                return;
+            }
 
             if (await this.verificaridade(datanasci)) {
                 try {
@@ -159,7 +166,19 @@ export default class CredenciaisController {
                     }
 
                 }
+
+
+                // Isso é por percaução no caso da api para verificar os dados do BI ficar fora do ar, ainda assim ele vai criar um usuario
+                // nunca se sabe no dia da pap a api pode cair este essa é  percausão
                 catch (err) {
+
+                    const  vifirybi2=await prisma.cliente.findFirst({
+                        where:{t_BI:numerobi.toString()}
+                    })
+                    if(vifirybi2){
+                        res.json(400).json('Este numero do BI já se encontra associado a outra conta');
+                        return;
+                    }
                     const morada2 = await prisma.morada.create({
                         data: {
                             t_bairro: bairro,
