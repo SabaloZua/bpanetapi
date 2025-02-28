@@ -3,9 +3,10 @@ import { PrismaClient } from '@prisma/client';
 const bcrypt = require('bcrypt');
 import crypto from 'crypto'
 import axios from "axios";
-import { sendCrendetias } from '../Modules/SendCredentias'
-import { SendeEmailVerfy } from '../Modules/SendEmailVerify';
-import {NumeroCartao, CodigodeAcesso, NumeroAdessao,CreateIBAN,NumeroConta} from '../Utils/Codigos';
+import { sendcrendetias } from '../Modules/SendCredentias'
+import { sendeemailverfy } from '../Modules/SendEmailVerify';
+import {numerocartao, codigodeacesso, numeroadessao,createIBAN,numeroconta} from '../Utils/Codigos';
+import {formatDate} from '../Utils/Datas'
 const prisma = new PrismaClient();
 
 
@@ -28,7 +29,7 @@ export default class CredenciaisController {
         return false
     }
 
-    public SendvalideEmail = async (req: Request, res: Response): Promise<void> => {
+    public sendvalideemail = async (req: Request, res: Response): Promise<void> => {
         const email = req.body.email;
         const result = await prisma.client_email.findFirst({
             where: { t_email_address: email },
@@ -40,7 +41,7 @@ export default class CredenciaisController {
         }
         try {
             const token = crypto.randomBytes(32).toString('hex');
-            const url = `http://localhost:5000/Openacount/validatEmail/${email}/${token}`
+            const url = `http://localhost:5000/openacount/validatemail/${email}/${token}`
             await prisma.client_email.create({
                 data: {
                     t_email_address: email,
@@ -48,7 +49,7 @@ export default class CredenciaisController {
                     t_token: token,
                 }
             })
-            SendeEmailVerfy(email, url)
+            sendeemailverfy(email, url)
                 .catch(err => console.error("Erro ao enviar código 2FA:", err));
             res.status(201).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
 
@@ -56,7 +57,7 @@ export default class CredenciaisController {
             res.status(400).json({ message: erro })
         }
     }
-    public ValideteEmail = async (req: Request, res: Response): Promise<void> => {
+    public valideteemail = async (req: Request, res: Response): Promise<void> => {
         const Usertolken = req.params.tolken;
         const email = req.params.email;
 
@@ -88,7 +89,7 @@ export default class CredenciaisController {
 
         res.redirect('http://localhost:3000/cadastro')
     }
-    public createClient = async (req: Request, res: Response): Promise<void> => {
+    public createclient = async (req: Request, res: Response): Promise<void> => {
         try {
 
             const { nomecliente, emailcliente, telefonecliente, datanasci, numerobi, ocupacao, rua, municipio, bairro } = req.body;
@@ -223,12 +224,13 @@ export default class CredenciaisController {
     public generatecredentias = async (req: Request, res: Response): Promise<void> => {
         try {
 
-            const numeroAdessao = NumeroAdessao();
-            const createAccessCode = CodigodeAcesso();
+            const numeroAdessao = numeroadessao();
+            const createAccessCode = codigodeacesso();
             const acessCodeHash = await this.encrypt(createAccessCode.toString());
             const email=req.body.email;
             const navegador=req.body.navegador;
             const sistemaoperativo=req.body.sistemaoperativo;
+            const iddispositivo=req.body.iddispositivo
 
             const client_email = await prisma.client_email.findFirst({
                 where: {
@@ -248,14 +250,14 @@ export default class CredenciaisController {
             })
             const account = await prisma.conta.create({
                 data: {
-                    t_numeroconta: NumeroConta(),
-                    t_Iban: CreateIBAN(),
+                    t_numeroconta: numeroconta(),
+                    t_Iban: createIBAN(),
                     cliente: { connect: { n_Idcliente: client_email?.n_Idcliente || 0 } },
                     tipo_cota: { connect: { n_Idtipoconta: 1 } },
-                    t_Nba: CreateIBAN(),
+                    t_Nba: createIBAN(),
                     t_estado: "Ativo",
                     n_saldo: 0.00,
-                    t_dataAbertura: Date.now().toString()
+                    t_dataAbertura: formatDate(new Date())
                 }
             })
 
@@ -264,15 +266,15 @@ export default class CredenciaisController {
                 prisma.cartao.create({
                     data: {
                         conta: { connect: { n_Idconta: account.n_Idconta } },
-                        t_numero: NumeroCartao().toString(),
+                        t_numero: numerocartao().toString(),
                         t_descricao: "Cartão de Debito",
-                        t_datavalidade: '2025-12-31',
+                        t_datavalidade: '2027-12-31',
                         t_estado: "Ativo"
                     }
                 }),
                 prisma.dispositivo.create({
                     data: {
-                        t_Iddispositivo: "12",
+                        t_Iddispositivo: iddispositivo.toString(),
                         cliente: { connect: { n_Idcliente: client_email?.n_Idcliente || 0 } },
                         t_navegador: navegador,
                         t_sistemaoperativo: sistemaoperativo
@@ -280,7 +282,7 @@ export default class CredenciaisController {
                 })
             ]);
 
-            sendCrendetias(client_email?.t_email_address, account.t_numeroconta, account.t_Iban, card.t_numero, numeroAdessao.toString(), createAccessCode.toString())
+            sendcrendetias(client_email?.t_email_address, account.t_numeroconta, account.t_Iban, card.t_numero, numeroAdessao.toString(), createAccessCode.toString())
                 .catch(err => console.error("Erro ao enviar credenciais:", err));
 
 

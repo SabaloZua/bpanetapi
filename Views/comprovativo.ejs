@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <title>Extrato Bancário</title>
+    <style>
+        body{
+            
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+        }
+      .cabecario{
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        width: 100%;
+        font-size: 13px;
+        margin-bottom: 60px;
+      }
+      .cabecario img{
+        position: absolute;
+        top: -35px;
+        left: -20px;
+        width: 150px;
+        height: 150x;
+      }
+      .container{
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+      }
+      .infoclient{
+        display: flex;
+        width: 100%;
+        justify-content: flex-end;
+        font-size: 12px;
+        text-align: justify;
+        margin-right: 30px !important;
+      }
+    
+      .dados{
+        margin-top: 30px;
+      }
+      table{
+        width: 100%;
+        border: none;
+        margin-top: 10px;
+      }
+      .titulos{
+       
+        border: 1px solid gainsboro;
+        margin-bottom: 3px;
+      }
+      .titulos tr th{
+        font-weight: normal;
+      }
+      
+      .c1{
+width: 15%;
+/* border: 1px solid #f00; */
+}
+.c2{
+width: 15%;
+/* border: 1px solid #f00; */
+}
+.c3{
+    width: 35%;
+    /* border: 1px solid #f00; */
+}
+.c4{
+    width: 15%;
+    /* border: 1px solid #f00; */
+}
+
+.c5{
+    width: 10%;
+    /* border: 1px solid #f00; */
+}
+.c6{
+width: 10%;
+}
+.dgv{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 8px;
+    gap:10px;
+    }
+    .dgv_titulo{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: row;
+        width: 100%;
+        margin: 5px;
+        border: 1px solid gray;
+        border-radius: 4px;
+       
+    }
+    .dgv_dados{
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        flex-direction:column;
+        width: 100%;
+    }
+    .dgv_linha{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: row;    
+       width: 100% !important;
+      
+    }
+    
+    .dgv_linha{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: row;    
+       width: 100% !important;
+      
+    }
+    .dgv_titulo div,.dgv_linha div{
+        padding: 7px;
+    }
+    
+      
+    </style>
+</head>
+<body>
+
+<main>
+    <div class="cabecario">
+        <img src="https://firebasestorage.googleapis.com/v0/b/blog-9f714.appspot.com/o/Images%2Fbpa.png?alt=media&token=01a270b4-79fd-4792-882b-29eec5d62960" alt="">
+           
+                <h3>Comprovativo</h3>
+           
+        
+    </div>
+    <div class="infoclient">
+        A operação que efectuou foi registada com sucesso através do serviço BPA NET
+    </div>
+
+        <div class="saudacao">
+            <p>Exmo senhor</p>
+            <p>Vimos por este meio apresentar a V. Exa o extrato da conta da qual é titular</p>
+        </div>
+
+   
+        <div class="dados">
+            <p> <Strong>IBAN:</Strong>  <%=iban %></p>
+            <p> <Strong>Nº DE CONTA:</Strong> KZ    <%= numeroconta %></p>
+            <p> <Strong>EXTRATO DE: </Strong>2025-01-24 A 2025-02-24 </p>
+        </div>
+
+          <div class="dgv">
+            <div class="dgv_titulo">
+                <div class="c1">Data Mov.</div>
+                <div class="c2">Data Val</div>
+                <div class="c3">Tipo Movimento</div>
+                <div class="c4">Débirto</div>
+
+                <div class="c5">Crédito</div>
+                <div class="c6">Saldo</div>
+            </div>
+
+            <div class="dgv_dados">
+                <% trasacoes.forEach(function(trasacao) { %>
+                <div class="dgv_linha">
+                    <div class="c1"><%= trasacao.t_datatrasacao %></div>
+                    <div class="c2"><%= trasacao.t_datatrasacao %></div>
+                    <div class="c3"><%= trasacao.t_descricao %></div>
+                    <div class="c4"><%= trasacao.n_valor %></div>
+                    <div class="c5"></div>
+                    <div class="c6"><%= trasacao.n_saldoactual %></div>
+                </div>
+                <% }); %>
+          </div>  
+          </div>
+
+
+</main>
+
+  
+
+ 
+</body>
+</html>

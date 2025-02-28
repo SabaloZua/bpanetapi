@@ -2,9 +2,9 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 const bcrypt = require('bcrypt');
 import crypto from 'crypto'
-import { SendeEmailVerfy } from '../Modules/SendEmailVerify';
-import { sendCrendetias } from '../Modules/SendCredentiaAD'
-import {NumeroAdessao,CodigodeAcesso} from '../Utils/Codigos'
+import { sendeemailverfy } from '../Modules/SendEmailVerify';
+import { sendcrendetias } from '../Modules/SendCredentiaAD'
+import {numeroadessao,codigodeacesso} from '../Utils/Codigos'
 
 const prisma = new PrismaClient();
 
@@ -15,7 +15,7 @@ export default class ControllerAdessao {
     return OTPHash;
   }
 
-  public SendvalideEmail = async (req: Request, res: Response): Promise<void> => {
+  public sendvalideemail = async (req: Request, res: Response): Promise<void> => {
     const email = req.body.email;
     const result = await prisma.client_email.findFirst({
       where: { t_email_address: email},
@@ -30,7 +30,7 @@ export default class ControllerAdessao {
 
       try {
         const token = crypto.randomBytes(32).toString('hex');
-        const url = `http://localhost:5000/adesao/validatEmail/${email}/${token}`
+        const url = `http://localhost:5000/adesao/validatemail/${email}/${token}`
         await prisma.client_email.update({
           where: {
             t_email_address: email
@@ -39,7 +39,7 @@ export default class ControllerAdessao {
             t_token: token,
           }
         })
-        SendeEmailVerfy(email, url)
+        sendeemailverfy(email, url)
           .catch(err => console.error("Erro ao enviar código 2FA:", err));
         res.status(201).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
 
@@ -53,7 +53,7 @@ export default class ControllerAdessao {
   }
 
   // Função para encontrar contas associadas a um cliente
-  public findAccounts = async (req: Request, res: Response): Promise<void> => {
+  public findaccounts = async (req: Request, res: Response): Promise<void> => {
     try {
       // Obtém os dados do corpo da requisição
       const biclient = req.body.bi;
@@ -103,7 +103,7 @@ export default class ControllerAdessao {
     }
   }
 
-  public ValideteEmail = async (req: Request, res: Response): Promise<void> => {
+  public valideteemail = async (req: Request, res: Response): Promise<void> => {
     const Usertolken = req.params.tolken;
     const email = req.params.email;
 
@@ -138,12 +138,13 @@ export default class ControllerAdessao {
   public generatecredentias = async (req: Request, res: Response): Promise<void> => {
     try {
 
-      const numeroAdessao = NumeroAdessao();
-      const createAccessCode = CodigodeAcesso();
+      const numeroAdessao = numeroadessao();
+      const createAccessCode = codigodeacesso();
       const acessCodeHash = await this.encrypt(createAccessCode.toString());
       const email=req.body.email;
       const navegador=req.body.navegador;
       const sistemaoperativo=req.body.sistemaoperativo;
+      const iddispositivo=req.body.iddispositivo
 
       const client_email = await prisma.client_email.findFirst({
         where: {
@@ -164,13 +165,13 @@ export default class ControllerAdessao {
       });
       const dispositivo = await prisma.dispositivo.create({
         data: {
-          t_Iddispositivo: "20200",
+          t_Iddispositivo: iddispositivo.toString(),
           cliente: { connect: { n_Idcliente: client_email?.n_Idcliente || 0 } },
           t_navegador: navegador,
           t_sistemaoperativo: sistemaoperativo
         }
       });
-      sendCrendetias(client_email?.t_email_address, numeroAdessao.toString(), createAccessCode.toString())
+      sendcrendetias(client_email?.t_email_address, numeroAdessao.toString(), createAccessCode.toString())
         .catch(err => console.error("Erro ao enviar credenciais:", err));
 
       res.status(200).json({
