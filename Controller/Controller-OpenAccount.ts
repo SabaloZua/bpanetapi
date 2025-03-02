@@ -51,7 +51,7 @@ export default class CredenciaisController {
             })
             sendeemailverfy(email, url)
                 .catch(err => console.error("Erro ao enviar código 2FA:", err));
-            res.status(201).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
+            res.status(200).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
 
         } catch (erro) {
             res.status(400).json({ message: erro })
@@ -246,11 +246,12 @@ export default class CredenciaisController {
             const numeroAdessao = numeroadessao();
             const createAccessCode = codigodeacesso();
             const acessCodeHash = await this.encrypt(createAccessCode.toString());
+
             const email=req.body.email;
             const navegador=req.body.navegador;
             const sistemaoperativo=req.body.sistemaoperativo;
             const iddispositivo=req.body.iddispositivo
-
+            const idpoconta =req.body.idpoconta
             const client_email = await prisma.client_email.findFirst({
                 where: {
                     t_email_address: email
@@ -260,19 +261,13 @@ export default class CredenciaisController {
                     t_email_address: true
                 }
             })
-            await prisma.cliente.update({
-                where: { n_Idcliente: client_email?.n_Idcliente || 0 },
-                data: {
-                    n_adesao: numeroAdessao,
-                    t_password: acessCodeHash
-                }
-            })
+          
             const account = await prisma.conta.create({
                 data: {
                     t_numeroconta: numeroconta(),
                     t_Iban: createIBAN(),
                     cliente: { connect: { n_Idcliente: client_email?.n_Idcliente || 0 } },
-                    tipo_cota: { connect: { n_Idtipoconta: 1 } },
+                    tipo_cota: { connect: { n_Idtipoconta: parseInt(idpoconta) } },
                     t_Nba: createIBAN(),
                     t_estado: "Ativo",
                     n_saldo: 0.00,
@@ -280,6 +275,17 @@ export default class CredenciaisController {
                 }
             })
 
+          const usuario=  await prisma.usuario.create({
+                data: {
+                    n_adesao: numeroAdessao,
+                    t_password: acessCodeHash,
+                    conta:{
+                        connect:{
+                            n_Idconta:account.n_Idconta
+                        }
+                    }
+                }
+            })
             // Criação do cartão e dispositivo em paralelo
             const [card, dispositivo] = await Promise.all([
                 prisma.cartao.create({
@@ -294,7 +300,7 @@ export default class CredenciaisController {
                 prisma.dispositivo.create({
                     data: {
                         t_Iddispositivo: iddispositivo.toString(),
-                        cliente: { connect: { n_Idcliente: client_email?.n_Idcliente || 0 } },
+                        usuario: { connect: { n_id_usuario:usuario.n_id_usuario  || 0 } },
                         t_navegador: navegador,
                         t_sistemaoperativo: sistemaoperativo
                     }
@@ -310,7 +316,7 @@ export default class CredenciaisController {
             });
         } catch (error) {
             res.status(400).json({
-                message: "erro ao processar a solicitação Tenete novamente mais tarde"
+                message: "erro ao processar a solicitação Tenete novamente mais tarde "+error
 
             })
         }

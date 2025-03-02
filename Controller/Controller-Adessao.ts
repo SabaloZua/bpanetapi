@@ -41,7 +41,7 @@ export default class ControllerAdessao {
         })
         sendeemailverfy(email, url)
           .catch(err => console.error("Erro ao enviar código 2FA:", err));
-        res.status(201).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
+        res.status(200).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
 
       } catch (erro) {
         res.status(400).json({ message: erro })
@@ -84,6 +84,9 @@ export default class ControllerAdessao {
       const conta = await prisma.conta.findFirst({
         where: {
           n_Idcliente: client_email?.cliente?.n_Idcliente, AND:{t_numeroconta:numeroconta.toString()}
+        },
+        select:{
+          n_Idconta:true
         }
       })
 
@@ -94,7 +97,7 @@ export default class ControllerAdessao {
       }
 
       // Retorna uma mensagem de sucesso
-      res.status(201).json({ message: "Dados validados com sucesso" })
+      res.status(200).json({ idconta:conta.n_Idconta })
 
     }
     catch (err) {
@@ -145,32 +148,34 @@ export default class ControllerAdessao {
       const navegador=req.body.navegador;
       const sistemaoperativo=req.body.sistemaoperativo;
       const iddispositivo=req.body.iddispositivo
+      const idconta=req.body.idconta
 
       const client_email = await prisma.client_email.findFirst({
         where: {
           t_email_address: email
         },
         select: {
-          n_Idcliente: true,
-          t_email_address: true
+          t_email_address: true,
         }
       })
 
-      const client = await prisma.cliente.update({
-        where: { n_Idcliente: client_email?.n_Idcliente || 0 },
+      const usuario= await prisma.usuario.create({
         data: {
           n_adesao: numeroAdessao,
-          t_password: acessCodeHash
+          t_password: acessCodeHash,
+          n_Idconta:parseInt(idconta)
         }
       });
+      
       const dispositivo = await prisma.dispositivo.create({
         data: {
           t_Iddispositivo: iddispositivo.toString(),
-          cliente: { connect: { n_Idcliente: client_email?.n_Idcliente || 0 } },
+          usuario: { connect: { n_id_usuario: usuario.n_id_usuario } },
           t_navegador: navegador,
           t_sistemaoperativo: sistemaoperativo
         }
       });
+      
       sendcrendetias(client_email?.t_email_address, numeroAdessao.toString(), createAccessCode.toString())
         .catch(err => console.error("Erro ao enviar credenciais:", err));
 

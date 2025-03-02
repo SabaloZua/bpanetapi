@@ -30,18 +30,23 @@ model cliente {
   n_Idcliente    Int              @id @default(autoincrement())
   t_nomeclient   String?          @db.VarChar
   t_datanasci    String?          @db.VarChar
-  n_adesao       Int?
   t_BI           String?          @db.VarChar @unique
-  t_password     String?
   t_ocupacao     String?          @db.VarChar
   n_Idmorada     Int
-  t_codigo2fa       String?
   Telefone       Telefone[]
   morada         morada           @relation(fields: [n_Idmorada], references: [n_Idmorada], onDelete: NoAction, onUpdate: NoAction)
   conta          conta[]
-  dispositivo    dispositivo[]
-  client_email       client_email[]
+  client_email      client_email[]
   images_cliente images_cliente[]
+}
+model usuario{
+  n_id_usuario Int @id @default(autoincrement())
+  n_adesao     Int?
+  t_password   String?
+  t_codigo2fa String?
+  n_Idconta Int
+  conta conta  @relation(fields: [n_Idconta], references: [n_Idconta], onDelete: NoAction, onUpdate: NoAction)
+  dispositivo    dispositivo[]
 }
 model client_email {
   n_email_id      Int           @id(map: "user_email_pkey") @default(autoincrement())
@@ -66,16 +71,17 @@ model conta {
   tipo_cota      tipo_cota  @relation(fields: [n_Idtipoconta], references: [n_Idtipoconta], onDelete: NoAction, onUpdate: NoAction)
   trasacao       trasacao[]
   LevantamentoSemCartao LevantamentoSemCartao[]
+  usuario usuario []
 }
 
 model dispositivo {
   n_id           Int @id @default(autoincrement())
   t_Iddispositivo    String     
-  n_Idcliente       Int
+  n_id_usuario       Int
   t_sistemaoperativo String? @db.VarChar
   t_navegador        String? @db.VarChar
-  cliente            cliente @relation(fields: [n_Idcliente], references: [n_Idcliente], onDelete: NoAction, onUpdate: NoAction)
-@@index([n_Idcliente, t_Iddispositivo])
+  usuario          usuario @relation(fields: [n_id_usuario], references: [n_id_usuario], onDelete: NoAction, onUpdate: NoAction)
+@@index([n_id_usuario, t_Iddispositivo])
 }
 
 model images_cliente {
@@ -104,7 +110,8 @@ model trasacao {
   n_Idtrasacao   Int     @id @default(autoincrement())
   n_contaorigem  Int
   t_contadestino String?
-  n_valor        Int?
+  n_debito       Float?
+  n_credito     Float?
   t_descricao    String?
   t_datatrasacao String? @db.VarChar
   n_saldoactual  Int?

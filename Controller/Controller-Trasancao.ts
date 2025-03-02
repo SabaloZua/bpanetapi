@@ -14,7 +14,7 @@ export default class Trasacao {
 
 
     // estou a fazer 
-    private comprovativo = async (nomecliente:string, iban:string, operacao: string, montate: string, idtransaco: number, destinario: string, ibandestinario:string, res:Response) => {
+    private comprovativo = async (nomecliente: string, iban: string, operacao: string, montate: string, idtransaco: number, destinario: string, ibandestinario: string, res: Response) => {
         const broswer = await puppeteer.launch();
         const page = await broswer.newPage();
         const filePath1 = path.join(__dirname, "../", "Views", "comprovativo.ejs");
@@ -23,9 +23,9 @@ export default class Trasacao {
             destinario: destinario,
             montate: montate,
             operacao: operacao,
-            id:idtransaco,
-            data:formatDate(new Date())
-        },    async (err, html) => {
+            id: idtransaco,
+            data: formatDate(new Date())
+        }, async (err, html) => {
             // Gera o PDF
             await page.setContent(html, { waitUntil: 'networkidle0' });
             await page.pdf({
@@ -44,66 +44,172 @@ export default class Trasacao {
             await broswer.close();
             res.download(filePath2, 'extrato.pdf');
         })
-        
+
     }
 
-    public tranferencia = async (req: Request, res: Response): Promise<void> => {
-        const { n_idcliente, contadestino, descricao, valor } = req.body;
-        const conta = await prisma.conta.findFirst({
-            where: {
-                n_Idcliente: parseInt(n_idcliente)
-            },
+    // trenferencia do mesmo banco
+    public tranferenciaintrabancaria = async (req: Request, res: Response): Promise<void> => {
+        const { idconta, contadestino, descricao, valor } = req.body;
+
+        const contaFrom = await prisma.conta.findFirst({
+            where: { n_Idconta: parseInt(idconta) },
             select: {
                 n_saldo: true,
                 n_Idconta: true,
-                t_Iban:true,
-                cliente:{select:{t_nomeclient:true}}
+                t_Iban: true,
+                t_numeroconta: true,
+                cliente: { select: { t_nomeclient: true } }
             }
         })
-        if (conta) {
-            if (conta.n_saldo < valor) {
+        const contaTO = await prisma.conta.findFirst({
+            where: { t_numeroconta: contadestino.toString() },
+            select: {
+                n_saldo: true,
+                n_Idconta: true
+            }
+        })
+
+
+        // verifica se a contaorigem existe
+        if (contaFrom) {
+            if (contaFrom.n_saldo < valor) {
                 res.status(400).send('Saldo insuficiente');
                 return;
             }
+            // verifica se a destino existe ou 
+            if (!contaTO || contadestino== contaFrom.t_numeroconta) {
+                res.status(400).json({message:'erro ao solicitar sua operação tente outra vez mais tarde'});
+                return;
+            }
             try {
-                const saldoactualizao = conta?.n_saldo - parseFloat(valor);
-                await prisma.conta.update({
-                    where: { n_Idconta: conta.n_Idconta },
-                    data: { n_saldo: saldoactualizao }
-                });
-              const trasacao=  await prisma.trasacao.create({
+
+                const saldoactualizadoFrom = contaFrom?.n_saldo - parseFloat(valor);
+                const saldoactualizadoTo = (contaTO?.n_saldo ?? 0) + parseFloat(valor);
+
+                await Promise.all([
+                    // actuliza o saldo na conta origem
+                    prisma.conta.update({
+                        where: { n_Idconta: contaFrom.n_Idconta },
+                        data: { n_saldo: saldoactualizadoFrom }
+                    }),
+                    // actuliza o saldo na conta destino
+                    prisma.conta.update({
+                        where: { n_Idconta: contaTO?.n_Idconta },
+                        data: { n_saldo: saldoactualizadoTo }
+                    })
+                ]);
+
+
+                const trasacaoFrom = await prisma.trasacao.create({
                     data: {
                         t_contadestino: contadestino,
-                        n_contaorigem: conta.n_Idconta,
+                        n_contaorigem: contaFrom.n_Idconta,
                         t_descricao: descricao,
                         t_datatrasacao: formatDate(new Date()),
-                        n_valor: parseFloat(valor),
-                        n_saldoactual: saldoactualizao
+                        n_debito: valor,
+                        n_saldoactual: saldoactualizadoFrom
                     }
                 })
 
-                res.status(200).send('Trasacao efectuada com sucesso');
-            //   this.comprovativo(descricao,t_contaestino,valor,trasacao.n_Idtrasacao,'SabaloZua',res)
+                const trasacaoTO = await prisma.trasacao.create({
+                    data: {
+                        t_contadestino: "",
+                        n_contaorigem: contaTO.n_Idconta,
+                        t_descricao: descricao,
+                        t_datatrasacao: formatDate(new Date()),
+                        n_credito: valor,
+                        n_saldoactual: saldoactualizadoTo
+                    }
+                })
+
+                res.status(200).json({
+                    message: "Trasacao efectuada com sucesso",
+                    saldoactualizado: saldoactualizadoFrom
+                });
+                //   this.comprovativo(descricao,t_contaestino,valor,trasacao.n_Idtrasacao,'SabaloZua',res)
                 return;
             } catch (erro) {
-                res.status(400).send('Erro ao efectuar a trasacao' + erro);
+                res.status(400).json({message:'Erro ao efectuar a trasacao' + erro});
                 return;
             }
         } else {
-            res.status(400).send('Erro ao efectuar a trasacao conta nao encontrada');
+            res.status(400).json({message:'Erro ao efectuar a trasacao conta nao encontrada'});
             return
         }
+    }
+
+    // trenferencia de  bancos diferentes
+    public tranferenciainterbancaria = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { idconta, ibancontadestino, descricao, valor } = req.body;
+            const contaFrom = await prisma.conta.findFirst({
+                where: { n_Idconta: parseInt(idconta) },
+                select: {
+                    n_saldo: true,
+                    n_Idconta: true,
+                    t_Iban: true,
+                    cliente: { select: { t_nomeclient: true } }
+                }
+            })
+
+            if (contaFrom) {
+
+                if(contaFrom.t_Iban==ibancontadestino){
+                    res.status(400).json({message:'Não pode enviar denheiro para se mesmo'});
+                    return; 
+                }
+                if (contaFrom.n_saldo < valor) {
+                    res.status(400).json({message:'Saldo insuficiente'});
+                    return;
+                }
+
+
+                const saldoactualizadoFrom = contaFrom?.n_saldo - parseFloat(valor);
+
+                await prisma.conta.update({
+                    where: { n_Idconta: contaFrom.n_Idconta },
+                    data: { n_saldo: saldoactualizadoFrom }
+                });
+
+                const trasacaoFrom = await prisma.trasacao.create({
+                    data: {
+                        t_contadestino: ibancontadestino,
+                        n_contaorigem: contaFrom.n_Idconta,
+                        t_descricao: descricao,
+                        t_datatrasacao: formatDate(new Date()),
+                        n_debito: valor,
+                        n_saldoactual: saldoactualizadoFrom
+                    }
+                })
+
+
+                res.status(200).json({
+                    message: "Trasacao efectuada com sucesso",
+                    saldoactualizado: saldoactualizadoFrom
+                });
+                return;
+            }
+            else {
+                res.status(400).json({message:"erro ao realizar a trasação conta Origem não encontrada"})
+            }
+
+        }
+        catch (erro) {
+            res.status(400).json({message:"Erro na solicitação tente mais tarde" + erro})
+        }
+
+
     }
     public levantamento = async (req: Request, res: Response): Promise<void> => {
         const valor: number = parseInt(req.body.valor);
         const emaildestino = req.body.emaildestino;
-        const idcliente = req.body.idcliente
+        const idconta = req.body.idconta
         const pin = req.body.pin;
         try {
 
             const conta = await prisma.conta.findFirst({
                 where: {
-                    n_Idcliente: idcliente
+                    n_Idconta: parseInt(idconta)
                 },
                 select: {
                     n_saldo: true,
@@ -112,17 +218,18 @@ export default class Trasacao {
             })
 
             if ((conta?.n_saldo || 0) < valor) {
-                res.json(200).json({ status: false, message: "Saldo insuficiente" })
+                res.json(200).json({message: "Saldo insuficiente" })
                 return;
             }
-            const saldoactualizao: number = (conta?.n_saldo || 0) - valor;
+            const saldoactualizado: number = (conta?.n_saldo || 0) - valor;
+
             const referencia = codigoreferencia().toString();
             await prisma.conta.update({
                 where: {
                     n_Idconta: conta?.n_Idconta
                 },
                 data: {
-                    n_saldo: saldoactualizao
+                    n_saldo: saldoactualizado
                 }
             })
 
@@ -130,9 +237,9 @@ export default class Trasacao {
             const trasacao = await prisma.trasacao.create({
                 data: {
                     t_datatrasacao: formatDate(new Date()),
-                    n_valor: valor,
+                    n_debito: valor,
                     t_descricao: 'Levantamento Sem Cartão',
-                    n_saldoactual: saldoactualizao,
+                    n_saldoactual: saldoactualizado,
                     n_contaorigem: conta?.n_Idconta || 0
                 }
             })
@@ -148,9 +255,8 @@ export default class Trasacao {
             sendlevantamento(referencia, emaildestino);
             res.status(200).json(
                 {
-                    status: true,
                     message: "Levantamento efectuado com sucesso",
-                    saldoactualizao: saldoactualizao
+                    saldoactualizado: saldoactualizado
                 }
             )
 
@@ -168,14 +274,15 @@ export default class Trasacao {
             select: {
                 t_datatrasacao: true,
                 t_descricao: true,
-                n_valor: true,
+                n_credito: true,
+                n_debito: true,
                 t_contadestino: true,
                 n_saldoactual: true
             }
         })
 
         if (trasacao.length > 0) {
-            res.status(200).json({ data: trasacao });
+            res.status(200).json({ trasacoes: trasacao });
             return;
         } else {
             res.status(400).json({ message: 'Nao foi possivel encontrar a trasacao' });
@@ -205,7 +312,8 @@ export default class Trasacao {
             select: {
                 t_datatrasacao: true,
                 t_descricao: true,
-                n_valor: true,
+                n_credito: true,
+                n_debito: true,
                 n_saldoactual: true,
             }
         })
@@ -217,9 +325,12 @@ export default class Trasacao {
         const broswer = await puppeteer.launch();
         const page = await broswer.newPage();
 
-        // await page.goto('http://localhost:5000/trasacao/extrato', { waitUntil: 'networkidle0' });
+        // caminho onde esta o formato do pdf a ser gerado
         const filePath1 = path.join(__dirname, "../", "Views", "extrato.ejs");
+        // caminho onde esta  do pdf  gerado
         const filePath2 = path.join(__dirname, "../", "extrato.pdf");
+
+        // geração do pdf
         await ejs.renderFile(filePath1, {
             trasacoes: trasacao,
             nomeclient: conta?.cliente.t_nomeclient,

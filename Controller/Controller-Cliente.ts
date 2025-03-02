@@ -41,7 +41,7 @@ export default class ClienteController {
                 return;
             }
           
-            res.json(data);     
+            res.json({dados:data});     
     }
     public async update(req: Request, res: Response): Promise<void> {
 
