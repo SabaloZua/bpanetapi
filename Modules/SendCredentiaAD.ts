@@ -14,7 +14,7 @@ import nodemailer from 'nodemailer'
     },
   })
 
-   export const sendCrendetias =  async (
+   export const sendcrendetias =  async (
     email: string | undefined,
     numeroAdessao: string | null,
     accessCode: string | null

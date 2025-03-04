@@ -16,7 +16,7 @@ import nodemailer from 'nodemailer'
 
 
 
-  export const SendAlert=async (email: string, navegador: string , dispositivo:string)=> {
+  export const sendalert=async (email: string, navegador: string , dispositivo:string)=> {
    
  await  transporter.sendMail({  
   from: process.env.EMAIL,

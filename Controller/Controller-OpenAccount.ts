@@ -3,9 +3,10 @@ import { PrismaClient } from '@prisma/client';
 const bcrypt = require('bcrypt');
 import crypto from 'crypto'
 import axios from "axios";
-import { sendCrendetias } from '../Modules/SendCredentias'
-import { SendeEmailVerfy } from '../Modules/SendEmailVerify';
-import {NumeroCartao, CodigodeAcesso, NumeroAdessao,CreateIBAN,NumeroConta} from '../Utils/Codigos';
+import { sendcrendetias } from '../Modules/SendCredentias'
+import { sendeemailverfy } from '../Modules/SendEmailVerify';
+import {numerocartao, codigodeacesso, numeroadessao,createIBAN,numeroconta} from '../Utils/Codigos';
+import {formatDate} from '../Utils/Datas'
 const prisma = new PrismaClient();
 
 
@@ -28,7 +29,7 @@ export default class CredenciaisController {
         return false
     }
 
-    public SendvalideEmail = async (req: Request, res: Response): Promise<void> => {
+    public sendvalideemail = async (req: Request, res: Response): Promise<void> => {
         const email = req.body.email;
         const result = await prisma.client_email.findFirst({
             where: { t_email_address: email },
@@ -40,7 +41,7 @@ export default class CredenciaisController {
         }
         try {
             const token = crypto.randomBytes(32).toString('hex');
-            const url = `http://localhost:5000/Openacount/validatEmail/${email}/${token}`
+            const url = `http://localhost:5000/openacount/validatemail/${email}/${token}`
             await prisma.client_email.create({
                 data: {
                     t_email_address: email,
@@ -48,15 +49,15 @@ export default class CredenciaisController {
                     t_token: token,
                 }
             })
-            SendeEmailVerfy(email, url)
+            sendeemailverfy(email, url)
                 .catch(err => console.error("Erro ao enviar código 2FA:", err));
-            res.status(201).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
+            res.status(200).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
 
         } catch (erro) {
             res.status(400).json({ message: erro })
         }
     }
-    public ValideteEmail = async (req: Request, res: Response): Promise<void> => {
+    public valideteemail = async (req: Request, res: Response): Promise<void> => {
         const Usertolken = req.params.tolken;
         const email = req.params.email;
 
@@ -88,10 +89,17 @@ export default class CredenciaisController {
 
         res.redirect('http://localhost:3000/cadastro')
     }
-    public createClient = async (req: Request, res: Response): Promise<void> => {
+    public createclient = async (req: Request, res: Response): Promise<void> => {
         try {
 
             const { nomecliente, emailcliente, telefonecliente, datanasci, numerobi, ocupacao, rua, municipio, bairro } = req.body;
+            const  vifirybi=await prisma.cliente.findFirst({
+                where:{t_BI:numerobi.toString()}
+            })
+            if(vifirybi){
+                res.status(400).json({message:'Este numero do BI já se encontra associado a outra conta'});
+                return;
+            }
 
             if (await this.verificaridade(datanasci)) {
                 try {
@@ -158,7 +166,19 @@ export default class CredenciaisController {
                     }
 
                 }
+
+
+                // Isso é por percaução no caso da api para verificar os dados do BI ficar fora do ar, ainda assim ele vai criar um usuario
+                // nunca se sabe no dia da pap a api pode cair este essa é  percausão
                 catch (err) {
+
+                    const  vifirybi2=await prisma.cliente.findFirst({
+                        where:{t_BI:numerobi.toString()}
+                    })
+                    if(vifirybi2){
+                        res.json(400).json('Este numero do BI já se encontra associado a outra conta');
+                        return;
+                    }
                     const morada2 = await prisma.morada.create({
                         data: {
                             t_bairro: bairro,
@@ -223,13 +243,15 @@ export default class CredenciaisController {
     public generatecredentias = async (req: Request, res: Response): Promise<void> => {
         try {
 
-            const numeroAdessao = NumeroAdessao();
-            const createAccessCode = CodigodeAcesso();
+            const numeroAdessao = numeroadessao();
+            const createAccessCode = codigodeacesso();
             const acessCodeHash = await this.encrypt(createAccessCode.toString());
+
             const email=req.body.email;
             const navegador=req.body.navegador;
             const sistemaoperativo=req.body.sistemaoperativo;
-
+            const iddispositivo=req.body.iddispositivo
+            const idpoconta =req.body.idpoconta
             const client_email = await prisma.client_email.findFirst({
                 where: {
                     t_email_address: email
@@ -239,48 +261,53 @@ export default class CredenciaisController {
                     t_email_address: true
                 }
             })
-            await prisma.cliente.update({
-                where: { n_Idcliente: client_email?.n_Idcliente || 0 },
-                data: {
-                    n_adesao: numeroAdessao,
-                    t_password: acessCodeHash
-                }
-            })
+          
             const account = await prisma.conta.create({
                 data: {
-                    t_numeroconta: NumeroConta(),
-                    t_Iban: CreateIBAN(),
+                    t_numeroconta: numeroconta(),
+                    t_Iban: createIBAN(),
                     cliente: { connect: { n_Idcliente: client_email?.n_Idcliente || 0 } },
-                    tipo_cota: { connect: { n_Idtipoconta: 1 } },
-                    t_Nba: CreateIBAN(),
+                    tipo_cota: { connect: { n_Idtipoconta: parseInt(idpoconta) } },
+                    t_Nba: createIBAN(),
                     t_estado: "Ativo",
                     n_saldo: 0.00,
-                    t_dataAbertura: Date.now().toString()
+                    t_dataAbertura: formatDate(new Date())
                 }
             })
 
+          const usuario=  await prisma.usuario.create({
+                data: {
+                    n_adesao: numeroAdessao,
+                    t_password: acessCodeHash,
+                    conta:{
+                        connect:{
+                            n_Idconta:account.n_Idconta
+                        }
+                    }
+                }
+            })
             // Criação do cartão e dispositivo em paralelo
             const [card, dispositivo] = await Promise.all([
                 prisma.cartao.create({
                     data: {
                         conta: { connect: { n_Idconta: account.n_Idconta } },
-                        t_numero: NumeroCartao().toString(),
+                        t_numero: numerocartao().toString(),
                         t_descricao: "Cartão de Debito",
-                        t_datavalidade: '2025-12-31',
+                        t_datavalidade: '2027-12-31',
                         t_estado: "Ativo"
                     }
                 }),
                 prisma.dispositivo.create({
                     data: {
-                        t_Iddispositivo: "12",
-                        cliente: { connect: { n_Idcliente: client_email?.n_Idcliente || 0 } },
+                        t_Iddispositivo: iddispositivo.toString(),
+                        usuario: { connect: { n_id_usuario:usuario.n_id_usuario  || 0 } },
                         t_navegador: navegador,
                         t_sistemaoperativo: sistemaoperativo
                     }
                 })
             ]);
 
-            sendCrendetias(client_email?.t_email_address, account.t_numeroconta, account.t_Iban, card.t_numero, numeroAdessao.toString(), createAccessCode.toString())
+            sendcrendetias(client_email?.t_email_address, account.t_numeroconta, account.t_Iban, card.t_numero, numeroAdessao.toString(), createAccessCode.toString())
                 .catch(err => console.error("Erro ao enviar credenciais:", err));
 
 
@@ -289,7 +316,7 @@ export default class CredenciaisController {
             });
         } catch (error) {
             res.status(400).json({
-                message: "erro ao processar a solicitação Tenete novamente mais tarde"
+                message: "erro ao processar a solicitação Tenete novamente mais tarde "+error
 
             })
         }

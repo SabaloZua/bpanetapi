@@ -1,4 +1,4 @@
-export const  CodigoReferencia=(): number=> {
+export const  codigoreferencia=(): number=> {
         let numero = '';
         for (let i = 0; i < 10; i++) {
             numero += Math.floor(Math.random() * 10);
@@ -7,21 +7,21 @@ export const  CodigoReferencia=(): number=> {
     }
 
 
-    export const NumeroCartao=(): number => {
+    export const numerocartao=(): number => {
         let numero = "";
         for (let i = 0; i < 16; i++) {
             numero += Math.floor(Math.random() * 10).toString(); // Gera um dígito aleatório de 0 a 9 e concatena à string
         }
         return parseInt(numero, 10); // Converte a string para um número inteiro
     }
-  export  const  CodigodeAcesso=(): number=> {
+  export  const  codigodeacesso=(): number=> {
         let numero = "";
         for (let i = 0; i < 8; i++) {
             numero += Math.floor(Math.random() * 10).toString(); // Gera um dígito aleatório de 0 a 9 e concatena à string
         }
         return parseInt(numero, 10); // Converte a string para um número inteiro
     }
- export const NumeroAdessao=(): number => {
+ export const numeroadessao=(): number => {
         let numero = "";
         for (let i = 0; i < 6; i++) {
             numero += Math.floor(Math.random() * 10).toString(); // Gera um dígito aleatório de 0 a 9 e concatena à string
@@ -29,12 +29,12 @@ export const  CodigoReferencia=(): number=> {
         return parseInt(numero, 10); // Converte a string para um número inteiro
     }
 
-    export const CreateIBAN=(): string => {
+    export const createIBAN=(): string => {
             const numeroAleatorio = Math.floor(Math.random() * 100000000000000);
             const numeroFormatado = numeroAleatorio.toString().padStart(15, "0");
             return `AO06006000${numeroFormatado}`;
         }
-      export const NumeroConta=(): string=> {
+      export const numeroconta=(): string=> {
             const numerosAleatorios = Array.from({ length: 9 }, () =>
                 Math.floor(Math.random() * 10),
             ).join("");

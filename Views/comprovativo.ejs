@@ -136,18 +136,12 @@ width: 10%;
     <div class="cabecario">
         <img src="https://firebasestorage.googleapis.com/v0/b/blog-9f714.appspot.com/o/Images%2Fbpa.png?alt=media&token=01a270b4-79fd-4792-882b-29eec5d62960" alt="">
            
-                <h3>Extrato Cliente</h3>
+                <h3>Comprovativo</h3>
            
         
     </div>
     <div class="infoclient">
-        <p><%= nomeclient %>
-            <br>
-            RUA N 12 CASA N 102 ZONA 9
-            <br>
-            BAIRRO MARTIRES DO KINFANGONDO
-            <br>
-        </p>
+        A operação que efectuou foi registada com sucesso através do serviço BPA NET
     </div>
 
         <div class="saudacao">
@@ -179,8 +173,8 @@ width: 10%;
                     <div class="c1"><%= trasacao.t_datatrasacao %></div>
                     <div class="c2"><%= trasacao.t_datatrasacao %></div>
                     <div class="c3"><%= trasacao.t_descricao %></div>
-                    <div class="c4"><%= trasacao.n_debito %></div>
-                    <div class="c5"><%= trasacao.n_credito %></div>
+                    <div class="c4"><%= trasacao.n_valor %></div>
+                    <div class="c5"></div>
                     <div class="c6"><%= trasacao.n_saldoactual %></div>
                 </div>
                 <% }); %>

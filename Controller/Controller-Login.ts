@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from '@prisma/client';
-import { SendCodigo2fa } from '../Modules/Send2fa'
-import {SendAlert} from '../Modules/SendAlert'
+import { sendcodigo2fa } from '../Modules/Send2fa'
+import {sendalert} from '../Modules/SendAlert'
 
 const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
@@ -30,33 +30,38 @@ export default class CredenciaisController {
         try {
 
             const numeroadessao: number = parseInt(req.body.numeroadessao);
-            const accessCode: string = req.body.accessCode;
-            const client = await prisma.cliente.findFirst({
+            const accessCode: string = req.body.accesscode;
+            const usuario = await prisma.usuario.findFirst({
                 where: {
                     n_adesao: numeroadessao
                 },
                 select: {
-                    n_Idcliente: true,
-                    t_password: true
+                    t_password: true,
+                    n_id_usuario:true,
+                    conta:{
+                        select:{
+                            n_Idcliente:true
+                        }
+                    }
                 }
             });
 
 
-            if (!client) {
+            if (!usuario) {
                 res.status(400).json({ message: "Número de adesão inválido " })
                 return;
             }
-            if (await this.compareHas(accessCode, client.t_password)) {
+            if (await this.compareHas(accessCode.toString(), usuario.t_password)) {
                 const codigo2fa = this.generatecodigo2fa().toString();
-                await prisma.cliente.update({
-                    where: { n_Idcliente: client?.n_Idcliente },
+                await prisma.usuario.update({
+                    where: { n_id_usuario: usuario?.n_id_usuario },
 
                     data: { t_codigo2fa: codigo2fa }
 
                 })
                 const client_email = await prisma.client_email.findFirst({
                     where: {
-                        n_Idcliente: client?.n_Idcliente,
+                        n_Idcliente: usuario?.conta.n_Idcliente,
                     },
                     select: {
                         t_email_address: true
@@ -64,9 +69,9 @@ export default class CredenciaisController {
                 });
 
                 if (client_email) {
-                     SendCodigo2fa(client_email.t_email_address, codigo2fa)
+                    sendcodigo2fa(client_email.t_email_address, codigo2fa)
                      .catch(err => console.error("Erro ao enviar código 2FA:", err));
-                    res.status(201).json({ message: "Email enviado para a sua caixa de entrada. Por favor verifique" }) ;
+                    res.status(200).json({ message: "Email enviado para a sua caixa de entrada. Por favor verifique" }) ;
                 }
 
             } else {
@@ -79,16 +84,26 @@ export default class CredenciaisController {
     }
     public async verify2fa(req: Request, res: Response): Promise<void> {
         const codigo2fa: string = req.body.codigo2fa;
-        const idDispositivo:string = req.body.idDispositivo;    
-        const sitemaDispositvo:string = req.body.sistemaDispositivo;
-        const navegadorDispositivo:string = req.body.navegadorDispositivo;
+        const iddispositivo:string = req.body.iddispositivo;    
+        const sitemaDispositvo:string = req.body.sistemadispositivo;
+        const navegadorDispositivo:string = req.body.navegadordispositivo;
         
-        const client = await prisma.cliente.findFirst({
+        const client = await prisma.usuario.findFirst({
             where: {
                 t_codigo2fa: codigo2fa.toString()
             },
             select: {
-                n_Idcliente: true
+                n_id_usuario:true,
+                conta:{
+                    select:{
+                        n_Idconta:true,
+                        cliente:{
+                            select:{
+                                n_Idcliente:true
+                            }
+                        }
+                    }
+                }
 
             }
         }); 
@@ -96,38 +111,34 @@ export default class CredenciaisController {
 
 
         if(client){
-            const [client_email, dispositivo] = await Promise.all([
-                prisma.client_email.findFirst({
-                    where: { n_Idcliente: client?.n_Idcliente },
-                    select: { t_email_address: true }
-                }),
-                prisma.dispositivo.findFirst({
-                    where: { n_Idcliente: client?.n_Idcliente, t_Iddispositivo: idDispositivo }
-                })
-            ]);
+            
+            const dispositivo= await prisma.dispositivo.findFirst({
+                    where: { n_id_usuario: client?.n_id_usuario, t_Iddispositivo: iddispositivo }
+                });
             
         if(!dispositivo){
-            const contaId = await prisma.conta.findFirst({
-                where:{
-                    n_Idcliente:client?.n_Idcliente},
-               select:{
-                     n_Idconta:true
-               }
-            })
+            
+          const client_email= await prisma.client_email.findFirst({
+                where: { n_Idcliente: client?.conta.cliente.n_Idcliente },
+                select: { t_email_address: true }
+            });
+
             const conta =await prisma.conta.update({
                 where:{
-                    n_Idconta:contaId?.n_Idconta
+                    n_Idconta:client.conta?.n_Idconta
                 },
                 data:{
-                    t_estado:"Pendente"
+                    t_estado:"pendente"
                 }
             })
+
             if(client_email){
-                 SendAlert(client_email.t_email_address,navegadorDispositivo,sitemaDispositvo)
+                sendalert(client_email.t_email_address,navegadorDispositivo,sitemaDispositvo)
             }
-            res.status(200).json({message:"Dispositivo desconhecido",user:client?.n_Idcliente})
+            
+            res.status(200).json({message:"Dispositivo desconhecido",contaid:client.conta.n_Idconta})
         }else{
-            res.status(200).json({message:"Autenticação concluida!",user:client?.n_Idcliente})
+            res.status(200).json({message:"Autenticação concluida!",contaid:client.conta.n_Idconta})
         }
     }else{
         res.status(400).json({message:"Código 2FA inválido"})

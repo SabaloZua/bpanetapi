@@ -4,13 +4,25 @@ const Routes = express.Router();
 const Controller = new CrendetiasController();
 
 
-Routes.post('/emailvalidete', Controller.SendvalideEmail);// parametros email
+// Parâmetros esperados no corpo da requisição: email
+Routes.post('/emailvalidete', Controller.sendvalideemail);// 
 
-Routes.get('/validatEmail/:email/:tolken', Controller.ValideteEmail);
+Routes.get('/validatemail/:email/:tolken', Controller.valideteemail);
 
-// paramentros nomecliente, emailcliente, telefonecliente:É DO TIPO INTEIRO, datanasci, numerobi, ocupacao, rua, municipio, bairro . !TODO O RESTO É STRING
-Routes.post('/createCliente', Controller.createClient);
+/*
+Parâmetros esperados no corpo da requisição: 
+nomecliente, emailcliente, 
+telefonecliente:É DO TIPO INTEIRO,
+datanasci, 
+numerobi, ocupacao, rua, municipio, bairro . !TODO O RESTO É STRING
+idpoconta -> aqui será o id do tipo da conta que está na tabela tipo_conta
 
-Routes.post('/', Controller.generatecredentias); // parametros email, navegador, sistemaoperativo
+*/
+Routes.post('/createcliente', Controller.createclient);
+
+
+// Parâmetros esperados no corpo da requisição: email, navegador, sistemaoperativo iddispositivo
+
+Routes.post('/', Controller.generatecredentias); 
 
 export default Routes;

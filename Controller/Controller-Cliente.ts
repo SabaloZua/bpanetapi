@@ -6,7 +6,7 @@ export default class ClienteController {
 
 
     
-    public async getAlldata(req: Request, res: Response): Promise<void> {
+    public async getalldata(req: Request, res: Response): Promise<void> {
         const id:number = parseInt(req.params.id);
        const data= await prisma.cliente.findUnique({
               where:{
@@ -41,7 +41,7 @@ export default class ClienteController {
                 return;
             }
           
-            res.json(data);     
+            res.json({dados:data});     
     }
     public async update(req: Request, res: Response): Promise<void> {
 

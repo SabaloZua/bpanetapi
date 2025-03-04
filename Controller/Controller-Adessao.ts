@@ -1,10 +1,12 @@
-import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-const bcrypt = require("bcrypt");
-import crypto from "crypto";
-import { SendeEmailVerfy } from "../Modules/SendEmailVerify";
-import { sendCrendetias } from "../Modules/SendCredentiaAD";
-import { NumeroAdessao, CodigodeAcesso } from "../Utils/Codigos";
+
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+const bcrypt = require('bcrypt');
+import crypto from 'crypto'
+import { sendeemailverfy } from '../Modules/SendEmailVerify';
+import { sendcrendetias } from '../Modules/SendCredentiaAD'
+import {numeroadessao,codigodeacesso} from '../Utils/Codigos'
+
 
 const prisma = new PrismaClient();
 
@@ -15,7 +17,7 @@ export default class ControllerAdessao {
     return OTPHash;
   }
 
-  public SendvalideEmail = async (req: Request, res: Response): Promise<void> => {
+  public sendvalideemail = async (req: Request, res: Response): Promise<void> => {
     const email = req.body.email;
     const result = await prisma.client_email.findFirst({
       where: { t_email_address: email },
@@ -28,22 +30,21 @@ export default class ControllerAdessao {
       }
 
       try {
-        const token = crypto.randomBytes(32).toString("hex");
-        const url = `http://localhost:5000/adesao/validatEmail/${email}/${token}`;
+        const token = crypto.randomBytes(32).toString('hex');
+        const url = `http://localhost:5000/adesao/validatemail/${email}/${token}`
+
         await prisma.client_email.update({
           where: {
             t_email_address: email,
           },
           data: {
             t_token: token,
-          },
-        });
-        SendeEmailVerfy(email, url).catch((err) =>
-          console.error("Erro ao enviar código 2FA:", err)
-        );
-        res
-          .status(201)
-          .json({ message: "Email de Verificação enviado verifique a sua caixa de entrada" });
+          }
+        })
+        sendeemailverfy(email, url)
+          .catch(err => console.error("Erro ao enviar código 2FA:", err));
+        res.status(200).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
+
       } catch (erro) {
         res.status(400).json({ message: erro });
       }
@@ -53,7 +54,7 @@ export default class ControllerAdessao {
   };
 
   // Função para encontrar contas associadas a um cliente
-  public findAccounts = async (req: Request, res: Response): Promise<void> => {
+  public findaccounts = async (req: Request, res: Response): Promise<void> => {
     try {
       // Obtém os dados do corpo da requisição
       const biclient = req.body.bi;
@@ -85,10 +86,12 @@ export default class ControllerAdessao {
       // Busca a conta do cliente no banco de dados
       const conta = await prisma.conta.findFirst({
         where: {
-          n_Idcliente: client_email?.cliente?.n_Idcliente,
-          AND: { t_numeroconta: numeroconta.toString() },
+          n_Idcliente: client_email?.cliente?.n_Idcliente, AND:{t_numeroconta:numeroconta.toString()}
         },
-      });
+        select:{
+          n_Idconta:true
+        }
+      })
 
       // Verifica se a conta existe
       if (!conta) {
@@ -99,133 +102,50 @@ export default class ControllerAdessao {
       }
 
       // Retorna uma mensagem de sucesso
-      res.status(201).json({ message: "Dados validados com sucesso" });
-    } catch (err) {
-      // Retorna uma mensagem de erro em caso de exceção
-      res
-        .status(400)
-        .json({ message: "Houve um erro ao fazer a adessao do cliente tente mais tarde" });
-    }
-  };
 
-  public ValideteEmail = async (req: Request, res: Response): Promise<void> => {
-    const Usertolken = req.params.tolken;
-    const email = req.params.email;
-
-    const result = await prisma.client_email.findFirst({
-      where: {
-        t_email_address: email,
-        AND: { t_token: Usertolken },
-      },
-      select: {
-        t_verified: true,
-      },
-    });
-
-    if (!result || result.t_verified == true) {
-      res.redirect("http://localhost:3000/token-expired");
-      return;
-    }
-
-    const updateClienteEmail = await prisma.client_email.update({
-      where: {
-        t_email_address: email,
-      },
-      data: {
-        t_verified: true,
-        t_token: "",
-      },
-    });
-
-    res.redirect("http://localhost:3000/adesao/dados");
-  };
-
-  //Rota que verifica se os dados inseridos na etapa 2, correspondem ao e-mail fornecido na etapa 1
-
-  public verifyData = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const bi = req.body.bi;
-      const email = req.body.email;
-      const client = await prisma.cliente.findFirst({
-        where: {
-          t_BI: bi,
-        },
-        select: {
-          n_Idcliente: true,
-          conta: {
-            select: {
-              n_Idconta: true,
-            },
-          },
-        },
-      });
-
-      //Verifica se o BI corresponde ao e-mail verificado
-
-      if (client) {
-        const client_email = await prisma.client_email.findFirst({
-          where: {
-            t_email_address: email,
-          },
-          select: {
-            n_Idcliente: true,
-          },
-        });
-
-        if (client_email) {
-          res.status(201).json({ message: "BI Encontrado com sucesso!!!" });
-        } else {
-          res.status(400).json({ message: "Este número de BI não pertence à sua conta" });
-        }
-      } else {
-        res.status(400).json({ message: "Número de BI não encontrado" });
-      }
-    } catch (error) {
-      res.status(400).json({
-        message: "erro ao processar a solicitação Tenete novamente mais tarde" + error,
-      });
-    }
-  };
-
-  public generatecredentias = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const numeroAdessao = NumeroAdessao();
-      const createAccessCode = CodigodeAcesso();
+      const numeroAdessao = numeroadessao();
+      const createAccessCode = codigodeacesso();
       const acessCodeHash = await this.encrypt(createAccessCode.toString());
-      const email = req.body.email;
-      const navegador = req.body.navegador;
-      const sistemaoperativo = req.body.sistemaoperativo;
+      const email=req.body.email;
+      const navegador=req.body.navegador;
+      const sistemaoperativo=req.body.sistemaoperativo;
+      const iddispositivo=req.body.iddispositivo
+      const idconta=req.body.idconta
+
 
       const client_email = await prisma.client_email.findFirst({
         where: {
           t_email_address: email,
         },
         select: {
-          n_Idcliente: true,
           t_email_address: true,
-        },
-      });
+        }
+      })
 
-      const client = await prisma.cliente.update({
-        where: { n_Idcliente: client_email?.n_Idcliente || 0 },
+
+      const usuario= await prisma.usuario.create({
         data: {
           n_adesao: numeroAdessao,
           t_password: acessCodeHash,
-        },
+
+          n_Idconta:parseInt(idconta)
+        }
+
       });
+      
       const dispositivo = await prisma.dispositivo.create({
         data: {
-          t_Iddispositivo: "20200",
-          cliente: { connect: { n_Idcliente: client_email?.n_Idcliente || 0 } },
+          t_Iddispositivo: iddispositivo.toString(),
+          usuario: { connect: { n_id_usuario: usuario.n_id_usuario } },
           t_navegador: navegador,
           t_sistemaoperativo: sistemaoperativo,
         },
       });
-      sendCrendetias(
-        client_email?.t_email_address,
-        numeroAdessao.toString(),
-        createAccessCode.toString()
-      ).catch((err) => console.error("Erro ao enviar credenciais:", err));
+
+      
+      sendcrendetias(client_email?.t_email_address, numeroAdessao.toString(), createAccessCode.toString())
+        .catch(err => console.error("Erro ao enviar credenciais:", err));
+
 
       res.status(200).json({
         message: "As suas credenciais já foram enviadas para o seu email!",

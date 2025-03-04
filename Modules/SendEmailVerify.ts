@@ -15,7 +15,7 @@ import nodemailer from 'nodemailer'
 
 
 
-  export const SendeEmailVerfy= async (email: string,  url: string) => { 
+  export const sendeemailverfy= async (email: string,  url: string) => { 
 	await transporter.sendMail({
 		from: process.env.USER_EMAIL,
 		to: email,
