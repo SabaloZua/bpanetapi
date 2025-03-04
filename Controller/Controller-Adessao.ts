@@ -56,13 +56,15 @@ export default class ControllerAdessao {
   // Função para encontrar contas associadas a um cliente
   public findaccounts = async (req: Request, res: Response): Promise<void> => {
     try {
+
+
       // Obtém os dados do corpo da requisição
       const biclient = req.body.bi;
       const numeroconta = req.body.numeroconta;
-      const email = req.params.email;
+      const email = req.body.email;   //Já existia uma variável email, por isso, troquei essa para 
 
       // Busca o email do cliente no banco de dados
-      const client_email = await prisma.client_email.findFirst({
+      const cliente_email = await prisma.client_email.findFirst({
         where: {
           t_email_address: email,
         },
@@ -76,7 +78,7 @@ export default class ControllerAdessao {
         },
       });
       // Verifica se o número do BI está associado ao cliente que por sua vez está associado a uma conta
-      if (client_email?.cliente?.t_BI != biclient) {
+      if (cliente_email?.cliente?.t_BI != biclient) {
         res
           .status(400)
           .json({ message: "Este numero do Bi na se encontra associado a  sua conta" });
@@ -86,7 +88,7 @@ export default class ControllerAdessao {
       // Busca a conta do cliente no banco de dados
       const conta = await prisma.conta.findFirst({
         where: {
-          n_Idcliente: client_email?.cliente?.n_Idcliente, AND:{t_numeroconta:numeroconta.toString()}
+          n_Idcliente: cliente_email?.cliente?.n_Idcliente, AND:{t_numeroconta:numeroconta.toString()}
         },
         select:{
           n_Idconta:true
@@ -106,7 +108,6 @@ export default class ControllerAdessao {
       const numeroAdessao = numeroadessao();
       const createAccessCode = codigodeacesso();
       const acessCodeHash = await this.encrypt(createAccessCode.toString());
-      const email=req.body.email;
       const navegador=req.body.navegador;
       const sistemaoperativo=req.body.sistemaoperativo;
       const iddispositivo=req.body.iddispositivo

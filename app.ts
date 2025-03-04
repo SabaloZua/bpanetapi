@@ -21,9 +21,9 @@ app.use(function(req, res, next){
    });
    
 app.use('/cliente', cliente);
-app.use('/login',Login);
-app.use('/adesao',Adessao);
-app.use('/trasacao',Trasacao);
+app.use('/login',login);
+app.use('/adesao',adessao);
+app.use('/trasacao',trasacao);
 app.use('/openacount',openAccount);
 app.use('/login',login);
 app.use('/adesao',adessao);
