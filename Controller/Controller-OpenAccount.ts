@@ -166,8 +166,6 @@ export default class CredenciaisController {
                     }
 
                 }
-
-
                 // Isso é por percaução no caso da api para verificar os dados do BI ficar fora do ar, ainda assim ele vai criar um usuario
                 // nunca se sabe no dia da pap a api pode cair este essa é  percausão
                 catch (err) {

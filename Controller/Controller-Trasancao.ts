@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 
-import path, { format } from 'path';
+import path from 'path';
+import {formatarmoeda} from '../Utils/Moeda'
 import ejs from 'ejs'
 import puppeteer from "puppeteer";
 import { sendlevantamento } from '../Modules/SendCodeLenvatamento';
@@ -106,8 +107,8 @@ export default class Trasacao {
                         n_contaorigem: contaFrom.n_Idconta,
                         t_descricao: descricao,
                         t_datatrasacao: formatDate(new Date()),
-                        n_debito: valor,
-                        n_saldoactual: saldoactualizadoFrom
+                        t_debito: formatarmoeda(valor),
+                        t_saldoactual: formatarmoeda(saldoactualizadoFrom)
                     }
                 })
 
@@ -117,8 +118,8 @@ export default class Trasacao {
                         n_contaorigem: contaTO.n_Idconta,
                         t_descricao: descricao,
                         t_datatrasacao: formatDate(new Date()),
-                        n_credito: valor,
-                        n_saldoactual: saldoactualizadoTo
+                        t_credito:formatarmoeda(valor),
+                        t_saldoactual:formatarmoeda( saldoactualizadoTo)
                     }
                 })
 
@@ -141,7 +142,7 @@ export default class Trasacao {
     // trenferencia de  bancos diferentes
     public tranferenciainterbancaria = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { idconta, ibancontadestino, descricao, valor } = req.body;
+            const { idconta, contadestino, descricao, valor } = req.body;
             const contaFrom = await prisma.conta.findFirst({
                 where: { n_Idconta: parseInt(idconta) },
                 select: {
@@ -154,7 +155,7 @@ export default class Trasacao {
 
             if (contaFrom) {
 
-                if(contaFrom.t_Iban==ibancontadestino){
+                if(contaFrom.t_Iban==contadestino){
                     res.status(400).json({message:'Não pode enviar denheiro para se mesmo'});
                     return; 
                 }
@@ -173,12 +174,12 @@ export default class Trasacao {
 
                 const trasacaoFrom = await prisma.trasacao.create({
                     data: {
-                        t_contadestino: ibancontadestino,
+                        t_contadestino: contadestino,
                         n_contaorigem: contaFrom.n_Idconta,
                         t_descricao: descricao,
                         t_datatrasacao: formatDate(new Date()),
-                        n_debito: valor,
-                        n_saldoactual: saldoactualizadoFrom
+                        t_debito: formatarmoeda(valor),
+                        t_saldoactual: formatarmoeda(saldoactualizadoFrom)
                     }
                 })
 
@@ -237,9 +238,9 @@ export default class Trasacao {
             const trasacao = await prisma.trasacao.create({
                 data: {
                     t_datatrasacao: formatDate(new Date()),
-                    n_debito: valor,
+                    t_debito: formatarmoeda(valor),
                     t_descricao: 'Levantamento Sem Cartão',
-                    n_saldoactual: saldoactualizado,
+                    t_saldoactual:formatarmoeda( saldoactualizado),
                     n_contaorigem: conta?.n_Idconta || 0
                 }
             })
@@ -274,10 +275,10 @@ export default class Trasacao {
             select: {
                 t_datatrasacao: true,
                 t_descricao: true,
-                n_credito: true,
-                n_debito: true,
+                t_credito: true,
+                t_debito: true,
                 t_contadestino: true,
-                n_saldoactual: true
+                t_saldoactual: true
             }
         })
 
@@ -312,9 +313,9 @@ export default class Trasacao {
             select: {
                 t_datatrasacao: true,
                 t_descricao: true,
-                n_credito: true,
-                n_debito: true,
-                n_saldoactual: true,
+                t_credito: true,
+                t_debito: true,
+                t_saldoactual: true,
             }
         })
         if (trasacao.length <= 0) {

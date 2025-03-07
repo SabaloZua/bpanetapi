@@ -4,6 +4,7 @@ import openAccount from './Routes/OpenAccount'
 import adessao from './Routes/Adesao'
 import login from './Routes/Login'
 import trasacao from './Routes/Trasancao';
+import Conta from './Routes/Conta';
 const port = process.env.PORT ? Number(process.env.PORT) : 5000;
 const app = express();
 app.use(express.json());
@@ -25,6 +26,7 @@ app.use('/openacount',openAccount);
 app.use('/login',login);
 app.use('/adesao',adessao);
 app.use('/trasacao',trasacao);
+app.use('/conta',Conta);
 
 app.listen(port, () => {
     console.log('Server is running on port 5000');
