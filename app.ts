@@ -22,12 +22,23 @@ app.use(function(req, res, next){
    });
    
 app.use('/cliente', cliente);
+app.use('/login',login);
+app.use('/adesao',adessao);
+app.use('/trasacao',trasacao);
 app.use('/openacount',openAccount);
 app.use('/login',login);
 app.use('/adesao',adessao);
 app.use('/trasacao',trasacao);
 app.use('/conta',Conta);
 
+
 app.listen(port, () => {
     console.log('Server is running on port 5000');
 });  
+
+//Alteracoes
+
+/**
+ * Coloquei o openaccount em minusculo
+ * 
+ */
