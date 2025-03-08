@@ -87,174 +87,210 @@ export default class CredenciaisController {
             }
         })
 
-        res.redirect('http://localhost:3000/cadastro')
+        res.redirect('http://localhost:3000/registo/tipo-conta')
     }
+
+
+    public verificaDadosPessoais = async (req: Request, res:Response): Promise<void> => {
+        const {numeroBi, dataNascimento, nomeCliente} = req.body;
+        const  vifirybi=await prisma.cliente.findFirst({
+            where:{t_BI:numeroBi.toString()}
+        })
+
+        if(vifirybi){
+            res.status(400).json({message:'Este número do BI já se encontra associado a outra conta'});
+            return;
+        }
+
+        if (await this.verificaridade(dataNascimento)) 
+        {
+            try {
+                //Quando testei com o meu numero de bi 009084648LA043 nao estava a retornar dados. Isso significa que a api esta com algumas limitacoes. Poderiamos simplesmente nao verificar se o BI pertence ao Minjud, mas nos casos em que ele retornar os dados (como no caso do bi do Pascoal) podemos aproveitar para verificar os nomes (so nos casos em que a api retornar dados)
+                const result = await axios.get(`https://www.sepe.gov.ao/ao/actions/bi.ajcall.php?bi=${numeroBi}`);
+                
+                if(result.data.sucess){
+                   
+                    
+                    let biNome = result.data.data.nome;
+                    
+                    biNome = biNome.trim().replace(/\s/g, "");
+                    
+                  
+                    if(biNome !== nomeCliente.trim().replace(/\s/g, "")) {
+
+                        res.status(400).json({ message: "Introduza o nome conforme consta no seu BI!" });
+                        
+                    }else{
+                        res.status(200).json({ message: 'Dados verificados com sucesso' });
+                    }
+
+                }else{
+                    res.status(400).json({ message: "BI não cadastrado nos serviços de identificação do MINJUD!" })
+                }
+
+                
+            } catch (error) {
+                const  vifirybi2=await prisma.cliente.findFirst({
+                    where:{t_BI:numeroBi.toString()}
+                })
+
+                if(vifirybi2){
+                    res.json(400).json('Este numero do BI já se encontra associado a outra conta');
+                    return;
+                }
+            }
+        }
+        else 
+        {
+            res.status(400).json({ message: "Menor de idade" })
+        }
+
+     
+    }
+
     public createclient = async (req: Request, res: Response): Promise<void> => {
         try {
 
-            const { nomecliente, emailcliente, telefonecliente, datanasci, numerobi, ocupacao, rua, municipio, bairro } = req.body;
-            const  vifirybi=await prisma.cliente.findFirst({
-                where:{t_BI:numerobi.toString()}
-            })
-            if(vifirybi){
-                res.status(400).json({message:'Este numero do BI já se encontra associado a outra conta'});
-                return;
-            }
+            const { nomeCliente, emailCliente, telefone, dataNascimento, numeroBi, idTipoConta, local, areaActividade, bairro, municipio, rua } = req.body;
 
-            if (await this.verificaridade(datanasci)) {
-                try {
-                    const result = await axios.get(`https://www.sepe.gov.ao/ao/actions/bi.ajcall.php?bi=${numerobi}`);
-                    if (result.data.sucess) {
-                        let biNome = result.data.data.nome;
-                        biNome = biNome.trim().replace(/\s/g, "");
-                        if (biNome != nomecliente.trim().replace(/\s/g, "")) {
-                            res.status(200)
-                                .json({ message: "Introduza o nome conforme consta no seu BI!" });
-                            return;
-                        }
-
-                        const morada = await prisma.morada.create({
-                            data: {
-                                t_bairro: bairro,
-                                t_municipio: municipio,
-                                t_rua: rua
-                            }
-                        })
-
-                        const cliente = await prisma.cliente.create({
-                            data: {
-                                t_nomeclient: nomecliente,
-                                t_datanasci: datanasci,
-                                t_ocupacao: ocupacao,
-                                t_BI: numerobi,
-                                morada: {
-                                    connect: {
-                                        n_Idmorada: morada.n_Idmorada
-                                    }
-                                }
-                            }
-                        })
-                        const [client_email, numerotelefone] = await Promise.all([
-                            prisma.client_email.update({
-                                where: {
-                                    t_email_address: emailcliente
-                                },
-                                data: {
-                                    cliente: {
-                                        connect: {
-                                            n_Idcliente: cliente.n_Idcliente
-                                        }
-                                    }
-                                }
-                            }),
-                            prisma.telefone.create({
-                                data: {
-                                    n_numero: parseInt(telefonecliente),
-                                    t_descricao: 'principal',
-                                    cliente: {
-                                        connect: {
-                                            n_Idcliente: cliente.n_Idcliente
-                                        }
-                                    }
-                                }
-                            })
-                        ]);
-                        res.json({ message: 'Cliente criado com sucesso' });
-                        return;
-                    } else {
-                        res.status(400).json({ message: "BI não cadastrado nos serviços de identificação do MINJUD!" })
+            const morada = await prisma.morada.create({
+                 data: {
+                     t_municipio: municipio,
+                
                     }
+                })
 
+
+            
+            const cliente = await prisma.cliente.create({
+                data: {
+                    t_nomeclient: nomeCliente,
+                    t_datanasci: dataNascimento,
+                    t_BI: numeroBi,
+                    morada: {
+                        connect: {
+                            n_Idmorada: morada.n_Idmorada
+                        }
+                    }
                 }
+            })
+            const [client_email, numerotelefone] = await Promise.all([
+                prisma.client_email.update({
+                    where: {
+                        t_email_address: emailCliente
+                    },
+                    data: {
+                        cliente: {
+                            connect: {
+                                n_Idcliente: cliente.n_Idcliente
+                            }
+                        }
+                    }
+                }),
+                prisma.telefone.create({
+                    data: {
+                        n_numero: parseInt(telefone),
+                        t_descricao: 'principal',
+                        cliente: {
+                            connect: {
+                                n_Idcliente: cliente.n_Idcliente
+                            }
+                        }
+                    }
+                })
+            ]);
+            res.json({ message: 'Cliente criado com sucesso' });
+            return;
+          
+
+            
+                
+
+                        
+
+                    
+
+                
 
 
                 // Isso é por percaução no caso da api para verificar os dados do BI ficar fora do ar, ainda assim ele vai criar um usuario
                 // nunca se sabe no dia da pap a api pode cair este essa é  percausão
-                catch (err) {
+                
 
-                    const  vifirybi2=await prisma.cliente.findFirst({
-                        where:{t_BI:numerobi.toString()}
-                    })
-                    if(vifirybi2){
-                        res.json(400).json('Este numero do BI já se encontra associado a outra conta');
-                        return;
-                    }
-                    const morada2 = await prisma.morada.create({
-                        data: {
-                            t_bairro: bairro,
-                            t_municipio: municipio,
-                            t_rua: rua
-                        }
-                    })
+                
 
-                    const cliente2 = await prisma.cliente.create({
-                        data: {
-                            t_nomeclient: nomecliente,
-                            t_datanasci: datanasci,
-                            t_ocupacao: ocupacao,
-                            t_BI: numerobi,
-                            morada: {
-                                connect: {
-                                    n_Idmorada: morada2.n_Idmorada
-                                }
-                            }
-                        }
-                    })
-                    const [client_email2, numerotelefone2] = await Promise.all([
-                        prisma.client_email.update({
-                            where: {
-                                t_email_address: emailcliente
-                            },
-                            data: {
-                                cliente: {
-                                    connect: {
-                                        n_Idcliente: cliente2.n_Idcliente
-                                    }
-                                }
-                            }
-                        }),
-                        prisma.telefone.create({
-                            data: {
-                                n_numero: parseInt(telefonecliente),
-                                t_descricao: 'principal',
-                                cliente: {
-                                    connect: {
-                                        n_Idcliente: cliente2.n_Idcliente
-                                    }
-                                }
-                            }
-                        })
-                    ]);
-                    res.json({ message: 'Cliente criado com sucesso' });
-
-                }
-
-            }
-
-            else {
-                res.status(400).json({ message: "menor de idade" })
-            }
+            
+            
 
         } catch (erro) {
             res.status(500).json({ message: `ocorreu um erro ${erro}` })
         }
     }
 
+   
+
     public generatecredentias = async (req: Request, res: Response): Promise<void> => {
         try {
+
+            const { nomeCliente, emailCliente, telefone, dataNascimento, numeroBi, idTipoConta, local, areaActividade, municipio } = req.body;
+
+            const morada = await prisma.morada.create({
+                 data: {
+                     t_municipio: municipio,
+                
+                    }
+                })
+
+
+            
+            const cliente = await prisma.cliente.create({
+                data: {
+                    t_nomeclient: nomeCliente,
+                    t_datanasci: dataNascimento,
+                    t_BI: numeroBi,
+                    morada: {
+                        connect: {
+                            n_Idmorada: morada.n_Idmorada
+                        }
+                    }
+                }
+            })
+            const [client_email, numerotelefone] = await Promise.all([
+                prisma.client_email.update({
+                    where: {
+                        t_email_address: emailCliente
+                    },
+                    data: {
+                        cliente: {
+                            connect: {
+                                n_Idcliente: cliente.n_Idcliente
+                            }
+                        }
+                    }
+                }),
+                prisma.telefone.create({
+                    data: {
+                        n_numero: parseInt(telefone),
+                        t_descricao: 'principal',
+                        cliente: {
+                            connect: {
+                                n_Idcliente: cliente.n_Idcliente
+                            }
+                        }
+                    }
+                })
+            ]);
 
             const numeroAdessao = numeroadessao();
             const createAccessCode = codigodeacesso();
             const acessCodeHash = await this.encrypt(createAccessCode.toString());
 
-            const email=req.body.email;
             const navegador=req.body.navegador;
             const sistemaoperativo=req.body.sistemaoperativo;
             const iddispositivo=req.body.iddispositivo
-            const idpoconta =req.body.idpoconta
-            const client_email = await prisma.client_email.findFirst({
+            const clientEmail = await prisma.client_email.findFirst({
                 where: {
-                    t_email_address: email
+                    t_email_address: emailCliente
                 },
                 select: {
                     n_Idcliente: true,
@@ -266,12 +302,14 @@ export default class CredenciaisController {
                 data: {
                     t_numeroconta: numeroconta(),
                     t_Iban: createIBAN(),
-                    cliente: { connect: { n_Idcliente: client_email?.n_Idcliente || 0 } },
-                    tipo_cota: { connect: { n_Idtipoconta: parseInt(idpoconta) } },
+                    cliente: { connect: { n_Idcliente: clientEmail?.n_Idcliente || 0 } },
+                    tipo_cota: { connect: { n_Idtipoconta: parseInt(idTipoConta) } },
                     t_Nba: createIBAN(),
                     t_estado: "Ativo",
                     n_saldo: 0.00,
-                    t_dataAbertura: formatDate(new Date())
+                    t_dataAbertura: formatDate(new Date()),
+                    t_area: areaActividade,
+                    t_local: local
                 }
             })
 
@@ -307,7 +345,7 @@ export default class CredenciaisController {
                 })
             ]);
 
-            sendcrendetias(client_email?.t_email_address, account.t_numeroconta, account.t_Iban, card.t_numero, numeroAdessao.toString(), createAccessCode.toString())
+            sendcrendetias(clientEmail?.t_email_address, account.t_numeroconta, account.t_Iban, card.t_numero, numeroAdessao.toString(), createAccessCode.toString())
                 .catch(err => console.error("Erro ao enviar credenciais:", err));
 
 
@@ -322,5 +360,7 @@ export default class CredenciaisController {
         }
 
     }
+
+   
 }
 

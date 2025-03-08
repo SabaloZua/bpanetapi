@@ -15,9 +15,4 @@ Router.post('/findaccounts/:email',Controller.findaccounts);
 // Parâmetros esperados no corpo da requisição: navegador, sistemaoperativo, email, iddispositivo, idconta TODO STRING
 Router.post('/sendcredential',Controller.generatecredentias);
 
-//Rota que verifica se os dados inseridos na etapa 2, correspondem ao e-mail fornecido na etapa 1
-//Parâmetros : bi, email
-//Pode ocorrer que o usuário insira um bi incorreto
-//Router.post('/verifyData',Controller.verifyData)
-
 export default Router;

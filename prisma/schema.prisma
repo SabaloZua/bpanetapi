@@ -66,6 +66,8 @@ model conta {
   t_dataAbertura String?    @db.VarChar
   n_Idcliente    Int
   n_Idtipoconta  Int
+  t_local        String?
+  t_area         String?
   cartao         cartao[]
   cliente        cliente    @relation(fields: [n_Idcliente], references: [n_Idcliente], onDelete: NoAction, onUpdate: NoAction)
   tipo_cota      tipo_cota  @relation(fields: [n_Idtipoconta], references: [n_Idtipoconta], onDelete: NoAction, onUpdate: NoAction)

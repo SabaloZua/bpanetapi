@@ -25,4 +25,11 @@ Routes.post('/createcliente', Controller.createclient);
 
 Routes.post('/', Controller.generatecredentias); 
 
+
+//Nunca se sabe se no meio do processso o usuário pense em desistir, se ele desistisse na tela de Envio de fotografias, os dados já poderiam estar na base de dados através da rota /createcliente, o que pode originar armazenamento de dados que não serão utilizados. Para isso, a inserção dos dados tem que ser realizada no fim do processo
+
+// Parâmetros esperados no corpo da requisição: numerobi, nomecliente, datanasci
+Routes.post('/verificarDadosPessoais', Controller.verificaDadosPessoais)
+
+
 export default Routes;
