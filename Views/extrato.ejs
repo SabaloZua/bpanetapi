@@ -64,20 +64,23 @@ width: 15%;
 /* border: 1px solid #f00; */
 }
 .c3{
-    width: 35%;
+    width: 25%;
     /* border: 1px solid #f00; */
 }
 .c4{
     width: 15%;
     /* border: 1px solid #f00; */
+    text-align: right;
 }
 
 .c5{
-    width: 10%;
+    width: 15%;
     /* border: 1px solid #f00; */
+    text-align: right;
 }
 .c6{
-width: 10%;
+width: 15%;
+text-align: right;
 }
 .dgv{
     display: flex;
@@ -125,6 +128,13 @@ width: 10%;
     }
     .dgv_titulo div,.dgv_linha div{
         padding: 7px;
+    }
+
+    .dgv_linha:nth-child(odd){
+        background-color:rgb(255 255 255);
+    }
+    .dgv_linha:nth-child(even){
+        background-color: #f7f7f7;
     }
     
       
@@ -179,9 +189,9 @@ width: 10%;
                     <div class="c1"><%= trasacao.t_datatrasacao %></div>
                     <div class="c2"><%= trasacao.t_datatrasacao %></div>
                     <div class="c3"><%= trasacao.t_descricao %></div>
-                    <div class="c4"><%= trasacao.n_debito %></div>
-                    <div class="c5"><%= trasacao.n_credito %></div>
-                    <div class="c6"><%= trasacao.n_saldoactual %></div>
+                    <div class="c4"><%= trasacao.t_debito %></div>
+                    <div class="c5"><%= trasacao.t_credito %></div>
+                    <div class="c6"><%= trasacao.t_saldoactual %></div>
                 </div>
                 <% }); %>
           </div>  

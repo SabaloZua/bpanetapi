@@ -128,6 +128,7 @@ export default class CredenciaisController {
                     res.status(400).json({ message: "BI não cadastrado nos serviços de identificação do MINJUD!" })
                 }
 
+
                 
             } catch (error) {
                 const  vifirybi2=await prisma.cliente.findFirst({

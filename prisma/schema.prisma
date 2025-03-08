@@ -112,11 +112,11 @@ model trasacao {
   n_Idtrasacao   Int     @id @default(autoincrement())
   n_contaorigem  Int
   t_contadestino String?
-  n_debito       Float?
-  n_credito     Float?
+  t_debito       String?
+  t_credito     String?
   t_descricao    String?
   t_datatrasacao String? @db.VarChar
-  n_saldoactual  Int?
+  t_saldoactual  String5?
   conta          conta   @relation(fields: [n_contaorigem], references: [n_Idconta], onDelete: NoAction, onUpdate: NoAction)
 }
 model LevantamentoSemCartao {
