@@ -1,10 +1,13 @@
 export const  codigoreferencia=(): number=> {
         let numero = '';
         for (let i = 0; i < 10; i++) {
+          
             numero += Math.floor(Math.random() * 10);
         }
         return parseInt(numero); 
     }
+
+
 
 
     export const numerocartao=(): number => {

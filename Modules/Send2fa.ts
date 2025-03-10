@@ -15,9 +15,8 @@ import nodemailer from 'nodemailer'
 
 
 
-
   export const sendcodigo2fa=async (email: string, OTP: string)=> {
-   
+  
  await  transporter.sendMail({  
   from: process.env.EMAIL,
   to: email,

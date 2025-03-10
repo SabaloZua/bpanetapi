@@ -44,7 +44,8 @@ model usuario{
   n_adesao     Int?
   t_password   String?
   t_codigo2fa String?
-  n_Idconta Int
+  t_primeiroLogin Boolean? @default(true)
+  n_Idconta Int @unique
   conta conta  @relation(fields: [n_Idconta], references: [n_Idconta], onDelete: NoAction, onUpdate: NoAction)
   dispositivo    dispositivo[]
 }
@@ -74,6 +75,7 @@ model conta {
   trasacao       trasacao[]
   LevantamentoSemCartao LevantamentoSemCartao[]
   usuario usuario []
+  perguntaSeguranca perguntaSeguranca[]
 }
 
 model dispositivo {
@@ -116,8 +118,16 @@ model trasacao {
   t_credito     String?
   t_descricao    String?
   t_datatrasacao String? @db.VarChar
-  t_saldoactual  String5?
+  t_saldoactual  String?
   conta          conta   @relation(fields: [n_contaorigem], references: [n_Idconta], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model perguntaSeguranca {
+  n_Idpergunta Int @id @default(autoincrement())
+  t_pergunta  String? 
+  t_resposta String?
+  n_Idconta  Int
+  conta    conta    @relation(fields: [n_Idconta], references: [n_Idconta], onDelete: NoAction, onUpdate: NoAction)
 }
 model LevantamentoSemCartao {
   n_Idlevantamento   Int      @id @default(autoincrement())
