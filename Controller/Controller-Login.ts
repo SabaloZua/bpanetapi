@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from '@prisma/client';
 import { sendcodigo2fa } from '../Modules/Send2fa'
 import { sendalert } from '../Modules/SendAlert'
+import { pid } from "process";
 
 const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
@@ -29,8 +30,8 @@ export default class CredenciaisController {
     public generate2fa = async (req: Request, res: Response): Promise<void> => {
         try {
 
-            const numeroadessao: number = parseInt(req.body.numeroadessao);
-            const accessCode: string = req.body.accesscode;
+            const numeroadessao: number = parseInt(req.body.numeroAdesao);
+            const accessCode: string = req.body.codigoAcesso
             const usuario = await prisma.usuario.findFirst({
                 where: {
                     n_adesao: numeroadessao
@@ -114,8 +115,8 @@ export default class CredenciaisController {
 
 
             if (client) {
-              const [dispositivo,usuario] =await Promise.all([
-                await prisma.usuario.update({where:{n_id_usuario:client.n_id_usuario},data:{t_codigo2fa:"" } }),
+              const [dispositivo] =await Promise.all([
+               
                 
                 await prisma.dispositivo.findFirst({
                    where: { n_id_usuario: client?.n_id_usuario, t_Iddispositivo: iddispositivo }
@@ -142,10 +143,10 @@ export default class CredenciaisController {
                     if (client_email) {
                         sendalert(client_email.t_email_address, navegadorDispositivo, sitemaDispositvo)
                     }
-                    res.status(200).json({ message: "Dispositivo desconhecido", contaid: client.conta.n_Idconta, primeirologin: client.t_primeiroLogin })
+                    res.status(200).json({ message: "Dispositivo desconhecido", contaid: client.conta.n_Idconta })
                 } else {
                     // sempre que ele faz o Login o sistema envia o id da conta e se é o primeiro Login true ou false
-                    res.status(200).json({ message: "Autenticação concluida!", contaid: client.conta.n_Idconta, primeirologin: client.t_primeiroLogin })
+                    res.status(200).json({ message: "Autenticação concluida!", contaid: client.conta.n_Idconta})
                 }
             } else {
                 res.status(400).json({ message: "Código 2FA inválido" })
@@ -153,6 +154,26 @@ export default class CredenciaisController {
         } catch (erro) {
             res.status(400).json({ message: "Erro ao processar a sua solicitação tente mais tarde" })
         }
+
+    }
+
+    public verificalogin =async(req: Request, res: Response): Promise<void> =>{
+        const codigo2fa=req.params.codigo2fa
+        const usuario= await prisma.usuario.findFirst({
+            where:{
+                t_codigo2fa:codigo2fa
+            },
+            select:{
+                t_primeiroLogin:true,
+                n_id_usuario:true
+            }  
+        })
+        if(!usuario){
+            res.status(400).json({ message: "Código 2FA inválido" });
+            return;
+        }
+        await prisma.usuario.update({where:{n_id_usuario:usuario?.n_id_usuario},data:{t_codigo2fa:"" } })
+        res.status(200).json({primeirologin:usuario?.t_primeiroLogin})
 
     }
 

@@ -22,10 +22,12 @@ Router.post('/levantamento',verifystate,Controller.levantamento);
 // Rota para obter transações
 // Parâmetro esperado na URL: idconta
 // Retorno trasacoes
-Router.get('/getTrasacao/:idconta',Controller.getTrasacao);
+Router.get('/gettrasacao/:idconta',Controller.getTrasacao);
 
 // Rota para obter extrato em PDF
 // Parâmetro esperado na URL: idconta
 Router.get('/getpdf/:idconta',Controller.getextrato);
 
+
+Router.post('/nahora',verifystate,Controller.nahora);
 export default Router;

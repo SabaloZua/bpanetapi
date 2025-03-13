@@ -359,5 +359,85 @@ export default class Trasacao {
             })
 
     }
+    public nahora =async (req:Request, res:Response): Promise<void>=>{
+        try{
+        const {idconta,valor,telefonecontadestino}=req.body;
+       const telefonecliente = await prisma.telefone.findFirst({
+            where:{n_numero:parseInt(telefonecontadestino)},
+            select:{n_Idcliente:true}
+        });
+        if(!telefonecliente){
+            res.status(400).json({message:'Este numero de telefone não está associado a nenhuma conta'})
+            return;
+        }
+       const [contaFrom,contaTo]= await  Promise.all([
+        await prisma.conta.findFirst({
+            where:{n_Idconta:idconta},
+            select:{n_saldo:true,n_Idconta:true}
+        }) ,   
+        await prisma.conta.findFirst({
+            where:{n_Idcliente:telefonecliente?.n_Idcliente},
+            select:{n_Idconta:true,n_saldo:true,t_numeroconta:true}
+        })
+       ])
+ if(contaFrom){
+       if(contaFrom?.n_saldo<valor){
+        res.status(400).send('Saldo insuficiente');
+        return;
+       }
+       if (contaTo?.n_Idconta==idconta) {
+        res.status(400).json({message:'Não pode enviar dinheiro para si mesmo'});
+        return;
+    }
+    const saldoactualizadoFrom = contaFrom?.n_saldo - parseFloat(valor);
+    const saldoactualizadoTo = (contaTo?.n_saldo ?? 0) + parseFloat(valor);
+
+    await Promise.all([
+        // actuliza o saldo na conta origem
+        prisma.conta.update({
+            where: { n_Idconta: contaFrom.n_Idconta },
+            data: { n_saldo: saldoactualizadoFrom }
+        }),
+        // actuliza o saldo na conta destino
+        prisma.conta.update({
+            where: { n_Idconta: contaTo?.n_Idconta },
+            data: { n_saldo: saldoactualizadoTo }
+        })
+    ]);
+
+    const trasacaoFrom = await prisma.trasacao.create({
+        data: {
+            t_contadestino: contaTo?.t_numeroconta,
+            n_contaorigem: contaFrom.n_Idconta,
+            t_descricao: "Transferencia intrabancaria",
+            t_datatrasacao: formatDate(new Date()),
+            t_debito: formatarmoeda(valor),
+            t_saldoactual: formatarmoeda(saldoactualizadoFrom)
+        }
+    })
+
+    const trasacaoTO = await prisma.trasacao.create({
+        data: {
+            t_contadestino: "",
+            n_contaorigem: contaFrom.n_Idconta,
+            t_descricao: 'Trasnferencia intrabancaria',
+            t_datatrasacao: formatDate(new Date()),
+            t_credito:formatarmoeda(valor),
+            t_saldoactual:formatarmoeda( saldoactualizadoTo)
+        }
+    })
+
+    res.status(200).json({
+        message: "Trasacao efectuada com sucesso",
+        saldoactualizado: saldoactualizadoFrom
+    });
+}
+        
+    }catch(err){
+        res.status(400).json({message:"erro ao processar a sua solicitação" +err });
+    }
+
+
+    }
 
 }
