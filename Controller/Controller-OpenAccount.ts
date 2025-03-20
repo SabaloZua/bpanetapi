@@ -206,7 +206,8 @@ export default class CredenciaisController {
             const numeroAdessao = numeroadessao();
             const createAccessCode = codigodeacesso();
             const acessCodeHash = await this.encrypt(createAccessCode.toString());
-
+            const numeroConta= numeroconta()
+            const IBAN=createIBAN(numeroConta.substring(0,9))
             const navegador=req.body.navegador;
             const sistemaoperativo=req.body.sistemaoperativo;
             const iddispositivo=req.body.iddispositivo
@@ -222,11 +223,11 @@ export default class CredenciaisController {
           
             const account = await prisma.conta.create({
                 data: {
-                    t_numeroconta: numeroconta(),
-                    t_Iban: createIBAN(),
+                    t_numeroconta:numeroConta,
+                    t_Iban:IBAN ,
                     cliente: { connect: { n_Idcliente: clientEmail?.n_Idcliente || 0 } },
                     tipo_cota: { connect: { n_Idtipoconta: parseInt(idTipoConta) } },
-                    t_Nba: createIBAN(),
+                    t_Nba: IBAN.replace('AO06',""),
                     t_estado: "Ativo",
                     n_saldo: 0.00,
                     t_dataAbertura: formatDate(new Date()),

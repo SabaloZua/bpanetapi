@@ -1,10 +1,11 @@
-import express from 'express';
+import express, { Router } from 'express';
 import cliente from './Routes/Cliente'
 import openAccount from './Routes/OpenAccount'
 import adessao from './Routes/Adesao'
 import login from './Routes/Login'
 import trasacao from './Routes/Trasancao';
 import Conta from './Routes/Conta';
+import Pdfs from './Routes/Pdfs'
 const port = process.env.PORT ? Number(process.env.PORT) : 5000;
 const app = express();
 app.use(express.json());
@@ -30,6 +31,7 @@ app.use('/login',login);
 app.use('/adesao',adessao);
 app.use('/trasacao',trasacao);
 app.use('/conta',Conta);
+app.use('/pdf',Pdfs);
 
 
 app.listen(port, () => {

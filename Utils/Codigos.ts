@@ -32,14 +32,14 @@ export const  codigoreferencia=(): number=> {
         return parseInt(numero, 10); // Converte a string para um número inteiro
     }
 
-    export const createIBAN=(): string => {
-            const numeroAleatorio = Math.floor(Math.random() * 100000000000000);
-            const numeroFormatado = numeroAleatorio.toString().padStart(15, "0");
-            return `AO06006000${numeroFormatado}`;
+    export const createIBAN=(numeroconta:string): string => {
+            const numeroAleatorio = Math.floor(Math.random() * 100);
+            const numeroFormatado = numeroAleatorio.toString().padStart(2,"4");
+            return `AO0600800000${numeroconta}10${numeroFormatado}`;
         }
       export const numeroconta=(): string=> {
             const numerosAleatorios = Array.from({ length: 9 }, () =>
                 Math.floor(Math.random() * 10),
             ).join("");
-            return `${numerosAleatorios}.30.001`;
+            return `${numerosAleatorios}.10.001`;
         }

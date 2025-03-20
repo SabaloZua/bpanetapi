@@ -141,7 +141,9 @@ export default class CredenciaisController {
                     })
 
                     if (client_email) {
-                        sendalert(client_email.t_email_address, navegadorDispositivo, sitemaDispositvo)
+                        const urlSim=`http://localhost:3000/confirmar?dispositivo=${iddispositivo}&usuario=${client.n_id_usuario}`
+                        const urlNao=`http://localhost:5000/confirmar/validatemail/`
+                        sendalert(client_email.t_email_address, navegadorDispositivo, sitemaDispositvo,urlSim,urlNao)
                     }
                     res.status(200).json({ message: "Dispositivo desconhecido", contaid: client.conta.n_Idconta })
                 } else {
@@ -165,7 +167,8 @@ export default class CredenciaisController {
             },
             select:{
                 t_primeiroLogin:true,
-                n_id_usuario:true
+                n_id_usuario:true,
+                n_Idconta:true
             }  
         })
         if(!usuario){
@@ -173,7 +176,7 @@ export default class CredenciaisController {
             return;
         }
         await prisma.usuario.update({where:{n_id_usuario:usuario?.n_id_usuario},data:{t_codigo2fa:"" } })
-        res.status(200).json({primeirologin:usuario?.t_primeiroLogin})
+        res.status(200).json({contaid:usuario.n_Idconta,primeirologin:usuario?.t_primeiroLogin})
 
     }
 
@@ -217,4 +220,71 @@ export default class CredenciaisController {
         }
     }
 
+    public verificarResposta=async (req:Request,res:Response): Promise<void>=>{
+        try{
+        const resposta=req.body.resposta;
+        const respostaformatada = resposta.toLowerCase().trim().replace(/\s/g, "")
+        const iddispositivo=req.body.iddispositivo;
+        const idusuario=req.body.idusuario || 0
+        const conta = await prisma.usuario.findFirst({
+            where: { n_id_usuario: parseInt(idusuario) },
+            select: { n_Idconta: true }
+        });
+
+        if (conta) {
+            const confirmaResposta = await prisma.perguntaSeguranca.findFirst({
+                where: { t_resposta: respostaformatada, n_Idconta: conta.n_Idconta }
+            });
+            if(confirmaResposta){
+               await prisma.dispositivo.create({
+                    data:{
+                        t_Iddispositivo:iddispositivo,
+                        n_id_usuario:parseInt(idusuario)
+                    }
+                })
+
+                await prisma.conta.update({
+                    where:{n_Idconta:conta.n_Idconta},
+                    data:{
+                        t_estado:'Activa'
+                    }
+                })
+                res.status(200).json({message:"Dados confimados com sucesso"})
+            }else{
+                res.status(400).json({message:"Respotas incorrecta"})
+            }
+        }
+
+        }catch(erro){
+            res.status(400).json({message:"erro ao processar a sua solicitação"})
+        }
+    }
+
+    public buscarPergunta=async (req:Request,res:Response):Promise<void>=>{
+        try{
+        const idusuario=parseInt(req.params.idusuario);
+
+        const conta=await prisma.usuario.findFirst({
+            where:{
+                n_id_usuario:idusuario
+            },
+            select:{n_Idconta:true}
+        })
+        const pergunta= await prisma.perguntaSeguranca.findFirst({
+            where:{
+                n_Idconta:conta?.n_Idconta
+            },
+            select:{
+                t_pergunta:true
+            }
+        })
+            res.status(200).json({pergunta:pergunta?.t_pergunta})
+
+        }catch(erro){
+            res.status(400).json({message:"Erro ao processar a solicitação"})
+        }
+    } 
+
+
+   
 }

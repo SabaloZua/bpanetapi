@@ -22,6 +22,10 @@ Router.get('/verificalogin/:codigo2fa',controller.verificalogin);
 Parâmetros esperados no corpo da requisição: 
 idconta, codigoacesso, pergunta, resposta  
 */
-Router.post('/primeiriologin',controller.primeirologin)
+Router.post('/primeiriologin',controller.primeirologin);
+
+Router.post('/verificarresposta',controller.verificarResposta);
+
+Router.get('/buscarpergunta/:idusuario',controller.buscarPergunta)
 
 export default Router;

@@ -19,15 +19,22 @@ Router.post('/transferenciainter',verifystate,Controller.tranferenciainterbancar
 // Retorno saldoactualizado
 Router.post('/levantamento',verifystate,Controller.levantamento);
 
-// Rota para obter transações
+// Rota para obter transações com filtro de data
 // Parâmetro esperado na URL: idconta
 // Retorno trasacoes
-Router.get('/gettrasacao/:idconta',Controller.getTrasacao);
-
-// Rota para obter extrato em PDF
-// Parâmetro esperado na URL: idconta
-Router.get('/getpdf/:idconta',Controller.getextrato);
+Router.get('/gettrasacao/:idconta/:datainicio/:datafim',Controller.getTrasacao);
 
 
+// Rota para levantamento
+// Parâmetros esperados no corpo da requisição: { idconta, valor,telefonecontadestino}
+// Retorno saldoactualizado
 Router.post('/nahora',verifystate,Controller.nahora);
+
+
+
+// Rota para obter transações recentes limite 6
+// Parâmetro esperado na URL: idconta
+// Retorno trasacoes
+ Router.get('/trasacoesrecentes/:idconta',Controller.trasnacaoPrincipal);
+
 export default Router;
