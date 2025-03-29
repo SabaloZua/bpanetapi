@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model Telefone {
   n_id_telefone Int     @id @default(autoincrement())
   n_numero      Int?
@@ -48,6 +49,7 @@ model usuario{
   n_Idconta Int @unique
   conta conta  @relation(fields: [n_Idconta], references: [n_Idconta], onDelete: Cascade, onUpdate: Cascade)
   dispositivo    dispositivo[]
+  
 }
 model client_email {
   n_email_id      Int           @id(map: "user_email_pkey") @default(autoincrement())
@@ -66,12 +68,10 @@ model conta {
   t_estado       String?    @db.VarChar
   t_dataAbertura String?    @db.VarChar
   n_Idcliente    Int
-  n_Idtipoconta  Int
   t_local        String?
   t_area         String?
   cartao         cartao[]
   cliente        cliente    @relation(fields: [n_Idcliente], references: [n_Idcliente], onDelete: Cascade, onUpdate: Cascade)
-  tipo_cota      tipo_cota  @relation(fields: [n_Idtipoconta], references: [n_Idtipoconta], onDelete: NoAction, onUpdate: NoAction)
   trasacao       trasacao[]
   LevantamentoSemCartao LevantamentoSemCartao[]
   usuario usuario []
@@ -104,11 +104,6 @@ model morada {
   cliente     cliente[]
 }
 
-model tipo_cota {
-  n_Idtipoconta Int     @id @default(autoincrement())
-  t_descricao   String? @db.VarChar
-  conta         conta[]
-}
 
 model trasacao {
   n_Idtrasacao   Int     @id @default(autoincrement())
@@ -141,3 +136,19 @@ model LevantamentoSemCartao {
   t_data_expiracao   DateTime? 
   conta              conta    @relation(fields: [n_Idconta], references: [n_Idconta], onDelete: Cascade, onUpdate: Cascade)
 }
+model entidade {
+  n_Identidade   Int      @id @default(autoincrement())
+  t_referencia String?
+  t_nome        String?
+  logo        String?
+  produtos produtos[]
+
+}
+
+ model produtos {
+  n_Idproduto   Int      @id @default(autoincrement())
+  t_descricao   String?
+  t_preco       Float?
+  n_Identidade  Int
+  entidade      entidade @relation(fields: [n_Identidade], references: [n_Identidade], onDelete: Cascade, onUpdate: Cascade)
+ }

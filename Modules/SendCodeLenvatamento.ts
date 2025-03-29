@@ -26,7 +26,7 @@ import nodemailer from 'nodemailer'
 
 
   export const sendlevantamento=async (referencia:string,email:string)=> {
-   
+   try{
  await  transporter.sendMail({  
   from: process.env.EMAIL,
   to: email,
@@ -41,4 +41,8 @@ import nodemailer from 'nodemailer'
 </div>`,
       
  })
+}catch(erro){
+ throw erro;
+}
+
 }

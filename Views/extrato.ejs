@@ -184,6 +184,14 @@ text-align: right;
             </div>
 
             <div class="dgv_dados">
+                <div class="dgv_linha">
+                    <div class="c1"> </div>
+                    <div class="c2"> </div>
+                    <div class="c3"> </div>
+                    <div class="c4"> </div>
+                    <div class="c5"> <strong>Saldo Inicial</strong></div>
+                    <div class="c6"><strong><%= saldoinicial %></strong></div>
+                </div>
                 <% trasacoes.forEach(function(trasacao) { %>
                 <div class="dgv_linha">
                     <div class="c1"><%= trasacao.t_datatrasacao %></div>

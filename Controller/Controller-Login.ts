@@ -86,70 +86,26 @@ export default class CredenciaisController {
     public async verify2fa(req: Request, res: Response): Promise<void> {
         try {
             const codigo2fa: string = req.body.codigo2fa;
-            const iddispositivo: string = req.body.iddispositivo;
-            const sitemaDispositvo: string = req.body.sistemadispositivo;
-            const navegadorDispositivo: string = req.body.navegadordispositivo;
 
             const client = await prisma.usuario.findFirst({
                 where: {
                     t_codigo2fa: codigo2fa.toString()
                 },
                 select: {
-                    n_id_usuario: true,
-                    t_primeiroLogin: true,
                     t_codigo2fa:true,
                     conta: {
                         select: {
-                            n_Idconta: true,
-                            cliente: {
-                                select: {
-                                    n_Idcliente: true
-                                }
-                            }
+                            n_Idconta: true
                         }
                     }
 
                 }
             });
 
-
-
             if (client) {
-              const [dispositivo] =await Promise.all([
-               
-                
-                await prisma.dispositivo.findFirst({
-                   where: { n_id_usuario: client?.n_id_usuario, t_Iddispositivo: iddispositivo }
-               })
-
-              ])
-             
-                if (!dispositivo) {
-
-                    const client_email = await prisma.client_email.findFirst({
-                        where: { n_Idcliente: client?.conta.cliente.n_Idcliente },
-                        select: { t_email_address: true }
-                    });
-
-                    const conta = await prisma.conta.update({
-                        where: {
-                            n_Idconta: client.conta?.n_Idconta
-                        },
-                        data: {
-                            t_estado: "pendente"
-                        }
-                    })
-
-                    if (client_email) {
-                        const urlSim=`http://localhost:3000/confirmar?dispositivo=${iddispositivo}&usuario=${client.n_id_usuario}`
-                        const urlNao=`http://localhost:5000/confirmar/validatemail/`
-                        sendalert(client_email.t_email_address, navegadorDispositivo, sitemaDispositvo,urlSim,urlNao)
-                    }
-                    res.status(200).json({ message: "Dispositivo desconhecido", contaid: client.conta.n_Idconta })
-                } else {
                     // sempre que ele faz o Login o sistema envia o id da conta e se é o primeiro Login true ou false
                     res.status(200).json({ message: "Autenticação concluida!", contaid: client.conta.n_Idconta})
-                }
+                
             } else {
                 res.status(400).json({ message: "Código 2FA inválido" })
             }
@@ -160,6 +116,7 @@ export default class CredenciaisController {
     }
 
     public verificalogin =async(req: Request, res: Response): Promise<void> =>{
+       try{
         const codigo2fa=req.params.codigo2fa
         const usuario= await prisma.usuario.findFirst({
             where:{
@@ -177,7 +134,9 @@ export default class CredenciaisController {
         }
         await prisma.usuario.update({where:{n_id_usuario:usuario?.n_id_usuario},data:{t_codigo2fa:"" } })
         res.status(200).json({contaid:usuario.n_Idconta,primeirologin:usuario?.t_primeiroLogin})
-
+    }catch(error){
+        res.status(400).json({message:"Erro ao processar a solicitação"})
+    }
     }
 
     // rota do primeiro login

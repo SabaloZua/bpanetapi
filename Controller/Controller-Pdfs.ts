@@ -11,6 +11,7 @@ export default class Pdfs {
 
      
     public gerarextrato = async (req: Request, res: Response): Promise<void> => {
+        try{
         const idconta = parseInt(req.params.idconta);
         const dataInicio=req.params.datainicio
         const dataFim=req.params.datafim
@@ -47,7 +48,7 @@ export default class Pdfs {
 
         })
         if (trasacao.length <= 0) {
-            res.json({ message: `Nao foi possivel encontrar a trasacao ${dataInicio}` });
+            res.status(400).json({ message: `Nao foi possivel encontrar a trasacao ${dataInicio}` });
             return;
         }
         
@@ -55,13 +56,18 @@ export default class Pdfs {
             trasacoes: trasacao,
             nomeclient: conta?.cliente.t_nomeclient || '',
             iban: conta?.t_Iban || '',
-            numeroconta: conta?.t_Iban || '',
+            numeroconta: conta?.t_numeroconta || '',
             datainicio:dataInicio,
-            datafim:dataFim
-        }
+            datafim:dataFim,
+            saldoinicial: trasacao[0].t_debito == null 
+                ? parseFloat(trasacao[0].t_saldoactual?.trim().replace(/\s/g, "")|| "0") - parseFloat(trasacao[0].t_credito || "0") 
+                :  parseFloat(trasacao[0].t_saldoactual?.trim().replace(/\s/g, "") || "0") + parseFloat(trasacao[0].t_debito)         }
 
         const Extrato = await extrato(dadosExtrato);
-        res.download(Extrato, 'comprovativo.pdf')
+        res.download(Extrato, 'extrato.pdf')
+        }catch(erro){
+            res.status(400).json({message:erro})
+        }
     }
 
     public gerarcomprovativo = async (req: Request, res: Response): Promise<void> => {
@@ -99,9 +105,11 @@ export default class Pdfs {
             benefeciario: dados?.t_benefeciario || '',
             descricao: dados?.t_descricao || '',
             idtransacao: idtransacao,
+            tipo: dados?.t_descricao?.includes('Transferencia') ?  'trans': 'pag' 
         }
 
         const Comprovativo = await comprovativo(dadosComprovativo);
         res.download(Comprovativo, 'comprovativo.pdf')
     }
+ 
 }

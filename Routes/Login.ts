@@ -2,7 +2,7 @@ import express from 'express';
 import LoginController from '../Controller/Controller-Login';
 const Router = express.Router();
 const controller = new LoginController();
-
+import { dispositivo } from '../helpers/dispositivo';
 // Parâmetros esperados no corpo da requisição: numeroAdesao, codigoAcesso
 Router.post('/generate2fa', controller.generate2fa);
 
@@ -14,7 +14,7 @@ codigo2fa, iddispositivo, sistemadispositivo, navegadordispositivo  !TODO DO TIP
 Retorno 
 contaid
 */
-Router.post('/verify2fa', controller.verify2fa); 
+Router.post('/verify2fa', dispositivo,controller.verify2fa); 
 
 
 Router.get('/verificalogin/:codigo2fa',controller.verificalogin);
@@ -27,5 +27,6 @@ Router.post('/primeiriologin',controller.primeirologin);
 Router.post('/verificarresposta',controller.verificarResposta);
 
 Router.get('/buscarpergunta/:idusuario',controller.buscarPergunta)
+
 
 export default Router;

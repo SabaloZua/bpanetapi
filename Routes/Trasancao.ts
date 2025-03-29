@@ -37,4 +37,6 @@ Router.post('/nahora',verifystate,Controller.nahora);
 // Retorno trasacoes
  Router.get('/trasacoesrecentes/:idconta',Controller.trasnacaoPrincipal);
 
+ Router.post('/pagamentoentidade',verifystate,Controller.pagamentosEntidade);
+
 export default Router;

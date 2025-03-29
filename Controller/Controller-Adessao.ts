@@ -107,6 +107,7 @@ export default class ControllerAdessao {
   }
 
   public valideteemail = async (req: Request, res: Response): Promise<void> => {
+    try{
     const Usertolken = req.params.tolken;
     const email = req.params.email;
 
@@ -136,6 +137,9 @@ export default class ControllerAdessao {
     })
 
     res.redirect('http://localhost:3000/adesao/dados')
+  }catch(erro){
+    res.status(400).json({message:"Erro ao processar a solicitação"});
+  }
   }
 
   public generatecredentias = async (req: Request, res: Response): Promise<void> => {

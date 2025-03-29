@@ -14,8 +14,8 @@ import nodemailer from 'nodemailer'
   })
 
 
-
   export const sendeemailverfy= async (email: string,  url: string) => { 
+    try{
 	await transporter.sendMail({
 		from: process.env.USER_EMAIL,
 		to: email,
@@ -27,5 +27,8 @@ import nodemailer from 'nodemailer'
                   <p style="margin-top: 20px;">Se você não tentou realizar esta operação, entre em contacto com nosso suporte em <a href="https://www.bpa.ao/particulares/apoio-ao-cliente/" style="color: #1674E3; text-decoration: underline;">Linha de Atendimento do BPA</a>. Por favor, não compartilhe este email com ninguém.</p>
             </div>`,
 	});
+}catch(err){
+  throw new Error(typeof err === 'string' ? err : 'An unknown error occurred')  
+}
 
 };

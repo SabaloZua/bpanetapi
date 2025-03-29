@@ -19,7 +19,7 @@ import nodemailer from 'nodemailer'
     numeroAdessao: string | null,
     accessCode: string | null
    ) => {
-  
+  try{
 
   await transporter.sendMail({
     from: process.env.EMAIL,
@@ -35,5 +35,8 @@ import nodemailer from 'nodemailer'
     <a href="http://localhost:3000/login" style="display: inline-block; padding: 10px 20px; background-color: #1674E3; color: #ffffff; text-decoration: none; border-radius: 5px; margin-top: 20px;">Login BPA NET</a>
 </div>
 `})
+  }catch(err){
+    throw new Error(typeof err === 'string' ? err : 'An unknown error occurred')
+  }
 }
 

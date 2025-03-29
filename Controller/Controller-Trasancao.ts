@@ -14,7 +14,7 @@ export default class Trasacao {
     // tranferencia do mesmo banco
     public tranferenciaintrabancaria = async (req: Request, res: Response): Promise<void> => {
         const { idconta, contadestino, descricao, valor, benefeciario } = req.body;
-
+        
         const contaFrom = await prisma.conta.findFirst({
             where: { n_Idconta: parseInt(idconta) },
             select: {
@@ -37,7 +37,7 @@ export default class Trasacao {
         // verifica se a contaorigem existe
         if (contaFrom) {
             if (contaFrom.n_saldo < valor) {
-                res.status(400).send('Saldo insuficiente');
+                res.status(400).json({ message: 'Saldo insuficiente' });
                 return;
             }
             // verifica se a destino existe ou 
@@ -86,14 +86,14 @@ export default class Trasacao {
                         t_saldoactual: formatarmoeda(saldoactualizadoTo)
                     }
                 })
-               
-               
+
+
                 res.status(200).json({
                     message: "Trasacao efectuada com sucesso",
                     saldoactualizado: saldoactualizadoFrom,
-                    idtransacao:trasacaoFrom.n_Idtrasacao
+                    idtransacao: trasacaoFrom.n_Idtrasacao
                 });
-           
+
 
                 return;
             } catch (erro) {
@@ -155,7 +155,7 @@ export default class Trasacao {
                 res.status(200).json({
                     message: "Trasacao efectuada com sucesso",
                     saldoactualizado: saldoactualizadoFrom,
-                    idtransacao:trasacaoFrom.n_Idtrasacao
+                    idtransacao: trasacaoFrom.n_Idtrasacao
                 });
                 return;
             }
@@ -237,16 +237,17 @@ export default class Trasacao {
 
     // transações  com filtros de data
     public getTrasacao = async (req: Request, res: Response): Promise<void> => {
+        try{
         const idconta = parseInt(req.params.idconta);
         const dataInicio = new Date(req.params.datainicio).toISOString().split('T')[0]; // "YYYY-MM-DD"
         const dataFim = new Date(req.params.datafim).toISOString().split('T')[0]; // "YYYY-MM-DD"
         const trasacao = await prisma.trasacao.findMany({
             where: {
                 n_contaorigem: idconta,
-                t_datatrasacao:{
-                    gte:dataInicio,
-                    lte:dataFim
-                   }
+                t_datatrasacao: {
+                    gte: dataInicio,
+                    lte: dataFim
+                }
             },
             select: {
                 t_datatrasacao: true,
@@ -255,7 +256,7 @@ export default class Trasacao {
                 t_debito: true,
                 t_contadestino: true,
                 t_saldoactual: true,
-                n_Idtrasacao:true
+                n_Idtrasacao: true
             }
         })
         const dados = trasacao.map((el) => ({
@@ -264,7 +265,7 @@ export default class Trasacao {
             data: el.t_datatrasacao,
             debito: el.t_debito,
             credtio: el.t_credito,
-            saldoactual:el.t_saldoactual
+            saldoactual: el.t_saldoactual
         }))
 
         if (trasacao.length > 0) {
@@ -274,22 +275,26 @@ export default class Trasacao {
             res.status(400).json({ message: 'Nao foi possivel encontrar a trasacao' });
             return;
         }
+    }catch(erro){
+        res.status(400).json({ message: 'Erro ao processar a sua solicitação' })
+    }
     }
 
     // transações da tela princiapl limit 6
     public trasnacaoPrincipal = async (req: Request, res: Response): Promise<void> => {
         try {
             const idconta = parseInt(req.params.idconta);
-  const dataInicio=req.params.datainicio
-        const dataFim=req.params.datafim
-
+            const dataInicio = req.params.datainicio
+            const dataFim = req.params.datafim
+            const session = req.cookies;
+        
             const trasacao = await prisma.trasacao.findMany({
                 where: {
                     n_contaorigem: idconta,
-                    t_datatrasacao:{
-                        gte:dataInicio,
-                        lte:dataFim
-                       }
+                    t_datatrasacao: {
+                        gte: dataInicio,
+                        lte: dataFim
+                    }
                 },
                 select: {
                     n_Idtrasacao: true,
@@ -312,7 +317,7 @@ export default class Trasacao {
                 data: el.t_datatrasacao,
                 debito: el.t_debito,
                 credtio: el.t_credito,
-                saldoactual:el.t_saldoactual
+                saldoactual: el.t_saldoactual
             }))
             if (trasacao.length > 0) {
                 res.status(200).json({ trasacoes: dados });
@@ -325,7 +330,7 @@ export default class Trasacao {
             res.status(400).json('erro' + erro)
         }
     }
-  
+
     public nahora = async (req: Request, res: Response): Promise<void> => {
         try {
             const { idconta, valor, telefonecontadestino } = req.body;
@@ -352,7 +357,7 @@ export default class Trasacao {
             ])
             if (contaFrom) {
                 if (contaFrom?.n_saldo < valor) {
-                    res.status(400).send('Saldo insuficiente');
+                    res.status(400).json({ message: 'Saldo insuficiente' });
                     return;
                 }
                 if (contaTo?.n_Idconta == idconta) {
@@ -401,7 +406,7 @@ export default class Trasacao {
                 res.status(200).json({
                     message: "Trasacao efectuada com sucesso",
                     saldoactualizado: saldoactualizadoFrom,
-                    idtransacao:trasacaoFrom.n_Idtrasacao
+                    idtransacao: trasacaoFrom.n_Idtrasacao
                 });
             }
 
@@ -412,5 +417,78 @@ export default class Trasacao {
 
     }
 
+    public pagamentosEntidade = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const idconta = req.body.idconta;
+            const identidade = req.body.identidade;
+            const idproduto = req.body.idproduto;
+
+            const conta = await prisma.conta.findFirst({
+                where: { n_Idconta: idconta },
+                select: {
+                    n_saldo: true,
+                    n_Idconta: true,
+                    cliente: { select: { t_nomeclient: true } }
+                }
+            })
+            if (!conta) {
+                res.status(400).json({ message: "Ocorreu algum erro tente novamente mais tarde" })
+                return;
+            }
+            const proudto = await prisma.produtos.findFirst({
+                where: {
+                    n_Idproduto: idproduto,
+                    n_Identidade: identidade
+                },
+                select: {
+                    t_preco: true,
+                    t_descricao: true,
+                    entidade: {
+                        select: {
+                            t_nome: true,
+                            n_Identidade: true,
+                            t_referencia:true
+                        }
+
+                    }
+                }
+            })
+            if (proudto) {
+                if (proudto?.t_preco === null || (conta?.n_saldo ?? 0) < proudto.t_preco) {
+                    res.status(400).json({ message: "Saldo insuficiente" })
+                    return;
+                }
+            }
+            const saldoactualizado = parseInt(conta?.n_saldo?.toString() ?? "0") - parseInt(proudto?.t_preco?.toString() ?? "0");
+            prisma.conta.update({
+                where: { n_Idconta: conta.n_Idconta },
+                data: { n_saldo: saldoactualizado }
+            });
+
+            const trasacaoFrom = await prisma.trasacao.create({
+                data: {
+                    t_contadestino: proudto?.entidade?.t_referencia ? proudto.entidade.t_referencia.toString() : "" ,
+                    n_contaorigem: conta.n_Idconta,
+                    t_descricao: `Pagamento  a entidade ${proudto?.entidade.t_nome} - ${proudto?.t_descricao}`,
+                    t_datatrasacao: formatDate(new Date()),
+                    t_debito: proudto?.t_preco?.toString(),
+                    t_saldoactual: formatarmoeda(saldoactualizado),
+                    t_benefeciario: proudto?.entidade.t_nome
+                }
+            })
+
+            res.status(200).json({
+                message: "Trasacao efectuada com sucesso",
+                saldoactualizado: saldoactualizado,
+                idtransacao: trasacaoFrom.n_Idtrasacao
+            });
+
+
+        } catch (err) {
+            res.status(400).json({ message: "erro ao processar a sua solicitação" })
+        }
+    }
+
+    
 
 }

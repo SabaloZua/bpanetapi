@@ -58,6 +58,7 @@ export default class CredenciaisController {
         }
     }
     public valideteemail = async (req: Request, res: Response): Promise<void> => {
+        try{
         const Usertolken = req.params.tolken;
         const email = req.params.email;
 
@@ -88,7 +89,10 @@ export default class CredenciaisController {
         })
 
         res.redirect('http://localhost:3000/registo/tipo-conta')
+    }catch(error){
+        res.status(400).json({message:"Erro  ao processar sua solicitação"})
     }
+}
 
 
     public verificaDadosPessoais = async (req: Request, res:Response): Promise<void> => {
@@ -162,8 +166,6 @@ export default class CredenciaisController {
                 
                     }
                 })
-
-
             
             const cliente = await prisma.cliente.create({
                 data: {
@@ -226,7 +228,6 @@ export default class CredenciaisController {
                     t_numeroconta:numeroConta,
                     t_Iban:IBAN ,
                     cliente: { connect: { n_Idcliente: clientEmail?.n_Idcliente || 0 } },
-                    tipo_cota: { connect: { n_Idtipoconta: parseInt(idTipoConta) } },
                     t_Nba: IBAN.replace('AO06',""),
                     t_estado: "Ativo",
                     n_saldo: 0.00,

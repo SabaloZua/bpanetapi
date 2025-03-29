@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
-
 export  const verifystate= async (req: Request, res: Response, next: NextFunction) => {
+    try{
     const idconta=req.body.idconta;
     const estado= await prisma.conta.findFirst({
         where:{
@@ -19,4 +19,7 @@ export  const verifystate= async (req: Request, res: Response, next: NextFunctio
             return;
     }
     next();
+} catch (erro) {
+    res.status(400).json({message:erro})
+}
 }

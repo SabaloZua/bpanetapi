@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 export default class Conta {
   public getalldata = async (req: Request, res: Response): Promise<void> => {
+    try{
     const id: number = parseInt(req.params.idconta);
     const data = await prisma.conta.findUnique({
       where: {
@@ -16,7 +17,6 @@ export default class Conta {
         t_Nba: true,
         t_dataAbertura: true,
         t_numeroconta: true,
-        n_Idtipoconta: true,
         cartao: true,
         cliente: {
           select: {
@@ -37,15 +37,14 @@ export default class Conta {
     }
 
     const formatedData = {
-      conta:{
+      
         id:data.n_Idconta,
         iban:data.t_Iban,
         saldo:data.n_saldo,
         nba:data.t_Nba,
         dataAbertura:data.t_dataAbertura,
         numeroConta:data.t_numeroconta,
-        idTipoConta:data.n_Idtipoconta,
-      },
+      
 
       cartao:{
         idCartao:data.cartao[0].n_Idcartao,
@@ -63,5 +62,8 @@ export default class Conta {
     };
 
     res.json({ dados: formatedData });
+  }catch(err){
+    res.status(400).json({message:err})
+  }
   };
 }

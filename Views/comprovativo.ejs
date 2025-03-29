@@ -22,7 +22,7 @@
         top: -35px;
         left: -20px;
         width: 150px;
-        height: 150x;
+        height: 150px;
       }
     
       .info{
@@ -75,8 +75,13 @@
       <div class="DadosdaConta">
         <p> <strong>Dados do Movimento</strong> </p>
         <div class="dados">
+         <% if( tipo  == "trans") { %>
          <p><strong>Benefeciário:</strong> <%= benefeciario ? benefeciario : "Transferência enviada para mim" %></p>
          <p><strong>Conta/IBAN:</strong> <%= ibaTO %></p>
+         <% } else { %>
+          <p><strong>Descrição da Entidade:</strong> <%= benefeciario ? benefeciario : "Transferência enviada para mim" %></p>
+          <p><strong>NBI Entidade:</strong> <%= ibaTO %></p>
+         <% } %>
          <p><strong>Montante:</strong> KZ <%= montate %></p>
          <p><strong>Numero da operação: </strong><%= idtransacao %></p>
          <p><strong>Tipo de Movimento: </strong><%= descricao %></p>

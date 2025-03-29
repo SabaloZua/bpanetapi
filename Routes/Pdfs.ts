@@ -8,4 +8,5 @@ Router.get('/extrato/:idconta/:datainicio/:datafim',Controller.gerarextrato);
 
 Router.get('/comprovativo/:idtransacao',Controller.gerarcomprovativo);
 
+
 export default Router;

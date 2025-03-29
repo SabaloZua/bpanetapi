@@ -14,7 +14,8 @@ interface dadosComprovativo {
     ibanTO: string,
     benefeciario: string,
     descricao: string,
-    idtransacao: number
+    idtransacao: number,
+    tipo: string
    
 }
 interface dadosExtrato{
@@ -30,6 +31,7 @@ interface dadosExtrato{
     numeroconta:string
     datainicio:string,
     datafim:string
+    saldoinicial:number
 }
 
 // função para gerar comprovativo
@@ -48,9 +50,10 @@ export const comprovativo = async (dados: dadosComprovativo): Promise<string> =>
                 benefeciario: dados.benefeciario,
                 ibaTO: dados.ibanTO,
                 montate: formatarmoeda(parseInt(dados.montate)),
-                descricao: dados.descricao,
+                descricao: dados.descricao.split(" ").slice(0, 5).join(" "),
                 idtransacao: dados.idtransacao,
                 data: formatDate(new Date()),
+                tipo: dados.tipo
             }, async (err, html) => {
                 if (err) {
                     await browser.close();
@@ -103,7 +106,8 @@ export const extrato =async (dados:dadosExtrato):Promise<string>=>{
                             iban: dados.iban,
                             numeroconta: dados.numeroconta,
                             dataInicio:dados.datainicio,
-                            dataFim:dados.datafim
+                            dataFim:dados.datafim,
+                            saldoinicial: formatarmoeda(dados.saldoinicial)
                         },
                             async (err, html) => {
                                 // Gera o PDF
