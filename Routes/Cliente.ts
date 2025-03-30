@@ -10,4 +10,6 @@ const Controller = new ClienteController();
     Router.post('/verificacodigo', Controller.verificaCodigo);
     Router.post('/validardados',Controller.Validardados);
     Router.post('/novascredencias', Controller.GeranovasCredenciais);
+    Router.get('/perguntaseguranca/:email',Controller.buscarPergunta);
+    Router.post("/resposta",Controller.verificarResposta);
 export default Router; 

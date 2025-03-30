@@ -212,4 +212,62 @@ export default class ClienteController {
             }
         
     }
+    public buscarPergunta= async(req:Request,res:Response):Promise<void>=>{
+      try{
+      const email=req.params.email; 
+
+      const cliente= await prisma.client_email.findFirst({
+        where:{t_email_address:email},
+        select:{n_Idcliente:true}
+      });
+      if(!cliente){
+        res.status(400).json({message:"Email não assiado em nenhuma conta"})
+        return;
+      }
+       const conta= await prisma.conta.findFirst({
+        where:{n_Idcliente:cliente?.n_Idcliente ||0},
+        select:{n_Idconta:true}
+       });
+       const pergunta= await prisma.perguntaSeguranca.findFirst({
+        where:{n_Idconta:conta?.n_Idconta},
+        select:{t_pergunta:true}
+       });
+       res.status(200).json({pergunta:pergunta?.t_pergunta})
+    }catch(erro){
+      res.status(200).json({message:"Ocorreu um erro ao fazer a sua solicitação"})
+    }
+    }
+    public verificarResposta= async(req:Request,res:Response):Promise<void>=>{
+      try{
+      const resposta=req.body.resposta;
+      const email=req.body.email;
+        const respostaformatada = resposta.toLowerCase().trim().replace(/\s/g, "")
+        const cliente= await prisma.client_email.findFirst({
+          where:{t_email_address:email},
+          select:{n_Idcliente:true}
+        });
+        if(!cliente){
+          res.status(400).json({message:"Email não assiado em nenhuma conta"})
+          return;
+        }
+         const conta= await prisma.conta.findFirst({
+          where:{n_Idcliente:cliente?.n_Idcliente ||0},
+          select:{n_Idconta:true}
+         });
+        if (conta) {
+          const confirmaResposta = await prisma.perguntaSeguranca.findFirst({
+              where: { t_resposta: respostaformatada, n_Idconta: conta.n_Idconta }
+          });
+          if(confirmaResposta){
+              res.status(200).json({message:"Dados confimados com sucesso"})
+          }else{
+              res.status(400).json({message:"Respotas incorrecta"})
+          }
+      }
+
+      }catch(erro){
+        res.status(400).json({message:"Erro ao processar sua solicitação"})
+      }
+      }
+
 }
