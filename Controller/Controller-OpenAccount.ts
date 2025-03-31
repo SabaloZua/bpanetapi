@@ -88,7 +88,7 @@ export default class CredenciaisController {
             }
         })
 
-        res.redirect('http://localhost:3000/registo/tipo-conta')
+        res.redirect('http://localhost:3000/registo/dados-pessoais')
     }catch(error){
         res.status(400).json({message:"Erro  ao processar sua solicitação"})
     }
@@ -142,6 +142,8 @@ export default class CredenciaisController {
                 if(vifirybi2){
                     res.json(400).json('Este numero do BI já se encontra associado a outra conta');
                     return;
+                }else{
+                    res.status(200).json({ message: 'Dados verificados com sucesso' });
                 }
             }
         }

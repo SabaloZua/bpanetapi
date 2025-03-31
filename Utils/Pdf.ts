@@ -50,7 +50,7 @@ export const comprovativo = async (dados: dadosComprovativo): Promise<string> =>
                 benefeciario: dados.benefeciario,
                 ibaTO: dados.ibanTO,
                 montate: formatarmoeda(parseInt(dados.montate)),
-                descricao: dados.descricao.split(" ").slice(0, 5).join(" "),
+                descricao: dados.descricao,
                 idtransacao: dados.idtransacao,
                 data: formatDate(new Date()),
                 tipo: dados.tipo
@@ -96,6 +96,7 @@ export const extrato =async (dados:dadosExtrato):Promise<string>=>{
                         // formatando os valores para moeda
                         const trasacoesFormatadas = dados.trasacoes.map(item => ({
                             ...item,
+                            t_descricao:item.t_descricao ?item.t_descricao.split(" ").slice(0, 5).join(" "):null,
                             t_credito: item.t_credito ? formatarmoeda(parseInt(item.t_credito)) : null,
                             t_debito:item.t_debito ? formatarmoeda(parseInt(item.t_debito)):null
                         }));
