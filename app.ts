@@ -8,6 +8,12 @@ import Conta from './Routes/Conta';
 import Pdfs from './Routes/Pdfs'
 import Entidade from './Routes/Entidades'
 import cookieParser from 'cookie-parser';
+import Admin from './Routes/Admin';
+import Deposito from './Routes/Deposito';
+import "./Modules/Depositos";
+import "./Modules/VerificaCartão";
+import { Request, Response } from 'express';
+
 const port = process.env.PORT ? Number(process.env.PORT) : 5000;
 const app = express();
 app.use(express.json());
@@ -24,7 +30,11 @@ app.use(function(req, res, next){
     res.setHeader("Access-Control-Allow-Credentials", true);
     next();
    });
-   
+
+app.get('/', (req:Request, res:Response) => {
+    res.send('API is running...');	
+});
+
 app.use('/cliente', cliente);
 app.use('/login',login);
 app.use('/adesao',adessao);
@@ -36,6 +46,9 @@ app.use('/trasacao',trasacao);
 app.use('/conta',Conta);
 app.use('/entidade',Entidade);
 app.use('/pdf',Pdfs);
+app.use('/admin',Admin)
+app.use('/deposito',Deposito);
+
 
 
 app.listen(port, () => {

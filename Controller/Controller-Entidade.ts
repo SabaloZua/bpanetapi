@@ -29,9 +29,6 @@ export default class ClienteController {
         const idEntidade = parseInt(req.params.idEntidade);
         try{
             const DadosProdutos = await prisma.produtos.findMany({
-                where:{
-                    n_Identidade:idEntidade
-                },
                 select:{
                     t_descricao:true,
                     t_preco:true,

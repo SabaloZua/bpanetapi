@@ -110,27 +110,29 @@ export default class CredenciaisController {
         {
             try {
                 //Quando testei com o meu numero de bi 009084648LA043 nao estava a retornar dados. Isso significa que a api esta com algumas limitacoes. Poderiamos simplesmente nao verificar se o BI pertence ao Minjud, mas nos casos em que ele retornar os dados (como no caso do bi do Pascoal) podemos aproveitar para verificar os nomes (so nos casos em que a api retornar dados)
-                const result = await axios.get(`https://www.sepe.gov.ao/ao/actions/bi.ajcall.php?bi=${numeroBi}`);
+                //const result = await axios.get(`https://www.sepe.gov.ao/ao/actions/bi.ajcall.php?bi=${numeroBi}`);
                 
-                if(result.data.sucess){
+              //  if(result.data.sucess){
                    
                     
-                    let biNome = result.data.data.nome;
+                  //  let biNome = result.data.data.nome;
                     
-                    biNome = biNome.trim().replace(/\s/g, "");
+                    //biNome = biNome.trim().replace(/\s/g, "");
                     
                   
-                    if(biNome !== nomeCliente.trim().replace(/\s/g, "")) {
+                   // if(biNome !== nomeCliente.trim().replace(/\s/g, "")) {
 
-                        res.status(400).json({ message: "Introduza o nome conforme consta no seu BI!" });
+                   //     res.status(400).json({ message: "Introduza o nome conforme consta no seu BI!" });
                         
-                    }else{
+                   // }else{
                         res.status(200).json({ message: 'Dados verificados com sucesso' });
-                    }
+                    //}
 
-                }else{
-                    res.status(400).json({ message: "BI não cadastrado nos serviços de identificação do MINJUD!" })
-                }
+               // }
+                
+                // else{
+                //     res.status(400).json({ message: "BI não cadastrado nos serviços de identificação do MINJUD!" })
+                // }
 
 
                 
@@ -140,7 +142,7 @@ export default class CredenciaisController {
                 })
 
                 if(vifirybi2){
-                    res.json(400).json('Este numero do BI já se encontra associado a outra conta');
+                    res.status(400).json({ message: 'Este número do BI já se encontra associado a outra conta' });
                     return;
                 }else{
                     res.status(200).json({ message: 'Dados verificados com sucesso' });

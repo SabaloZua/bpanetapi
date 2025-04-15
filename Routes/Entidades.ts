@@ -5,6 +5,6 @@ const Controller = new EntidadeController();
 
 
     Router.get('/dados', Controller.EntidadeDados);
-    Router.get('/produtos/:idEntidade', Controller.ProdutosEntidade);
+    Router.get('/produtos/', Controller.ProdutosEntidade);
 
 export default Router; 

@@ -44,8 +44,10 @@ export default class Pdfs {
                 t_credito: true,
                 t_debito: true,
                 t_saldoactual: true,
-            }
-
+            },
+            orderBy: {
+                n_Idtrasacao: "asc",
+              },
         })
         if (trasacao.length <= 0) {
             res.status(400).json({ message: `Nao foi possivel encontrar a trasacao ${dataInicio}` });
@@ -105,7 +107,7 @@ export default class Pdfs {
             benefeciario: dados?.t_benefeciario || '',
             descricao: dados?.t_descricao || '',
             idtransacao: idtransacao,
-            tipo: dados?.t_descricao?.includes('Transferencia') ?  'trans': 'pag' 
+            tipo: dados?.t_descricao?.includes('Transferencia') ?  'trans': dados?.t_descricao?.includes('Levantamento')? "lev": "pag"
         }
 
         const Comprovativo = await comprovativo(dadosComprovativo);

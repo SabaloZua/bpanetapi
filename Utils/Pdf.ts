@@ -62,10 +62,13 @@ export const comprovativo = async (dados: dadosComprovativo): Promise<string> =>
                 await page.setContent(html, { waitUntil: 'networkidle0' });
                 await page.pdf({
                     printBackground: true,
+                    displayHeaderFooter: true,
+                    headerTemplate: `<div></div>`,
+                    footerTemplate: `<div style="width:100%; text-align:right; font-size:8px; margin-right:20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
                     format: "A4",
                     margin: {
                         top: "40px",
-                        bottom: "0px",
+                        bottom: "40px", // margem ajustada para acomodar o rodapé
                         left: "50px",
                         right: "40px"
                     },
@@ -115,11 +118,13 @@ export const extrato =async (dados:dadosExtrato):Promise<string>=>{
                                 await page.setContent(html, { waitUntil: 'networkidle0' });
                                 await page.pdf({
                                     printBackground: true,
-                
+                                    displayHeaderFooter: true,
+                                    headerTemplate: `<div></div>`,
+                                    footerTemplate: `<div style="width:100%; text-align:right; font-size:8px; margin-right:20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
                                     format: "A4",
                                     margin: {
                                         top: "5px",
-                                        bottom: "40px",
+                                        bottom: "20px", // margem ajustada para acomodar o rodapé
                                         left: "20px",
                                         right: "20px"
                 

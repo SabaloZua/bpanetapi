@@ -14,7 +14,7 @@ export  const verifystate= async (req: Request, res: Response, next: NextFunctio
         }
     })
 
-    if(estado?.t_estado==='pendente'){ 
+    if(estado?.t_estado==='Bloqueada'){ 
             res.status(400).json({status:false,message:"Estado da Conta Pendente Está a tentar usar esta conta é um dispositivo desconhecido"});
             return;
     }

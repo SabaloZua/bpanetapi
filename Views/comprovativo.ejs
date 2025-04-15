@@ -78,7 +78,7 @@
          <% if( tipo  == "trans") { %>
          <p><strong>Benefeciário:</strong> <%= benefeciario ? benefeciario : "Transferência enviada para mim" %></p>
          <p><strong>Conta/IBAN:</strong> <%= ibaTO %></p>
-         <% } else { %>
+         <% } else if ( tipo == "pag" ) { %>
           <p><strong>Descrição da Entidade:</strong> <%= benefeciario ? benefeciario : "Transferência enviada para mim" %></p>
           <p><strong>NBI Entidade:</strong> <%= ibaTO %></p>
          <% } %>

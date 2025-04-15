@@ -76,6 +76,7 @@ model conta {
   LevantamentoSemCartao LevantamentoSemCartao[]
   usuario usuario []
   perguntaSeguranca perguntaSeguranca[]
+  deposito_prazo deposito_prazo[]
 }
 
 model dispositivo {
@@ -132,8 +133,8 @@ model LevantamentoSemCartao {
   t_pin         String   @db.VarChar(10)
   t_referencia       String   @db.VarChar
   t_estado           String   @default("pendente")
-  t_data_solicitacao DateTime @default(now())
-  t_data_expiracao   DateTime? 
+  t_data_solicitacao DateTime @default(dbgenerated("now()" ))
+  t_data_expiracao DateTime? @default(dbgenerated("now() + interval '1 day'"))
   conta              conta    @relation(fields: [n_Idconta], references: [n_Idconta], onDelete: Cascade, onUpdate: Cascade)
 }
 model entidade {
@@ -145,10 +146,41 @@ model entidade {
 
 }
 
- model produtos {
+ model produtos { 
   n_Idproduto   Int      @id @default(autoincrement())
   t_descricao   String?
   t_preco       Float?
   n_Identidade  Int
   entidade      entidade @relation(fields: [n_Identidade], references: [n_Identidade], onDelete: Cascade, onUpdate: Cascade)
  }
+
+model deposito_prazo {
+  n_iddeposito                Int       @id @default(autoincrement())
+  n_valor             Decimal   @db.Decimal(15,2)
+  t_dataCriacao       DateTime  @default(now())
+  t_dataVencimento    DateTime
+  n_jurosBrutos       Decimal   @db.Decimal(15,2)
+  n_jurosLiquidos     Decimal   @db.Decimal(15,2)
+  n_Idconta         Int
+  t_status            String    @default("ATIVO") // ATIVO, LIQUIDADO, CANCELADO
+  n_idtipodeposito Int
+  parametroDeposito   tipo_deposito @relation(fields: [n_idtipodeposito], references: [n_idtipodeposito])
+  conta     conta   @relation(fields: [n_Idconta], references: [n_Idconta], onDelete: Cascade, onUpdate: Cascade)
+  @@index([t_dataVencimento])
+  @@index([t_status])
+}
+
+model tipo_deposito {
+  n_idtipodeposito          Int       @id @default(autoincrement())
+  t_nome        String     @unique // Nome do produto (ex: "DP BFA 10%")
+  n_prazo       Int      
+  n_tanb        Int  
+  n_montanteMin Int  
+  t_descricao   String?   @db.VarChar
+  n_montanteMax Int  
+  t_moeda       String    @default("AOA") // Moeda do depósito (ex: "AOA", "USD")
+  depositosAPrazo deposito_prazo[]
+}
+
+
+

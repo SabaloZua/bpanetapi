@@ -57,7 +57,7 @@ export default class Conta {
       cliente:{
         nome:data.cliente.t_nomeclient,
         bi:data.cliente.t_BI,
-        email:data.cliente.client_email
+        email:data.cliente.client_email[0].t_email_address,
       }
     };
 
@@ -66,4 +66,5 @@ export default class Conta {
     res.status(400).json({message:err})
   }
   };
+
 }
