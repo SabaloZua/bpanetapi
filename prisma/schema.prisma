@@ -151,8 +151,17 @@ model entidade {
   t_descricao   String?
   t_preco       Float?
   n_Identidade  Int
+  subprodutos   sub_produtos[]
   entidade      entidade @relation(fields: [n_Identidade], references: [n_Identidade], onDelete: Cascade, onUpdate: Cascade)
  }
+
+model sub_produtos{
+  n_Idsubproduto   Int      @id @default(autoincrement())
+  t_descricao   String?
+  t_preco       Float?
+  n_Idproduto  Int
+  produtos     produtos @relation(fields: [n_Idproduto], references: [n_Idproduto], onDelete: Cascade, onUpdate: Cascade)
+}
 
 model deposito_prazo {
   n_iddeposito                Int       @id @default(autoincrement())

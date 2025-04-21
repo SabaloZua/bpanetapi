@@ -574,6 +574,12 @@ export default class Trasacao {
       const idconta = req.body.idconta;
       const identidade = req.body.identidade;
       const idproduto = req.body.idproduto;
+      /*Fiz algumas pesquisas e descobri que exsitem subprodutos em cada produto de uma entidade
+        Ex: Entidade: Unitel  Produto: saldo voz  SubProduto(pacote): 200kz 
+      */
+      //Pegar o subProduto
+
+      const idsubproduto = req.body.idsubproduto;
 
       const conta = await prisma.conta.findFirst({
         where: { n_Idconta: idconta },
@@ -587,7 +593,8 @@ export default class Trasacao {
         res.status(400).json({ message: "Ocorreu algum erro tente novamente mais tarde" });
         return;
       }
-      const proudto = await prisma.produtos.findFirst({
+      
+      const produto = await prisma.produtos.findFirst({
         where: {
           n_Idproduto: idproduto,
           n_Identidade: identidade,
@@ -604,14 +611,40 @@ export default class Trasacao {
           },
         },
       });
-      if (proudto) {
-        if (proudto?.t_preco === null || (conta?.n_saldo ?? 0) < proudto.t_preco) {
+
+      if (!produto) {
+        res.status(400).json({ message: "Nenhum produto encontrado" });
+        return;
+      }
+
+      /*
+       *  Pesquisar o sub produto
+       */
+      const subProduto = await prisma.sub_produtos.findFirst({
+        where:{
+          n_Idsubproduto: idsubproduto,
+          n_Idproduto: idproduto,
+        },
+
+        select: {
+          t_preco: true,
+          t_descricao: true,
+        }
+      })
+
+      if (!produto) {
+        res.status(400).json({ message: "Nenhum Subproduto encontrado" });
+        return;
+      }
+
+      if (subProduto) {
+        if (subProduto?.t_preco === null || (conta?.n_saldo ?? 0) < subProduto.t_preco) {
           res.status(400).json({ message: "Saldo insuficiente" });
           return;
         }
       }
       const saldoactualizado =
-        parseInt(conta?.n_saldo?.toString() ?? "0") - parseInt(proudto?.t_preco?.toString() ?? "0");
+        parseInt(conta?.n_saldo?.toString() ?? "0") - parseInt(subProduto?.t_preco?.toString() ?? "0");
       prisma.conta.update({
         where: { n_Idconta: conta.n_Idconta },
         data: { n_saldo: saldoactualizado },
@@ -619,15 +652,15 @@ export default class Trasacao {
 
       const trasacaoFrom = await prisma.trasacao.create({
         data: {
-          t_contadestino: proudto?.entidade?.t_referencia
-            ? proudto.entidade.t_referencia.toString()
+          t_contadestino: produto?.entidade?.t_referencia
+            ? produto.entidade.t_referencia.toString()
             : "",
           n_contaorigem: conta.n_Idconta,
-          t_descricao: `Pagamento  a entidade ${proudto?.entidade.t_nome} - ${proudto?.t_descricao}`,
+          t_descricao: `Pagamento  a entidade ${produto?.entidade.t_nome} - ${produto?.t_descricao}`,
           t_datatrasacao: formatDate(new Date()),
-          t_debito: proudto?.t_preco?.toString(),
+          t_debito: subProduto?.t_preco?.toString(),
           t_saldoactual: formatarmoeda(saldoactualizado),
-          t_benefeciario: proudto?.entidade.t_nome,
+          t_benefeciario: produto?.entidade.t_nome,
         },
       });
 
