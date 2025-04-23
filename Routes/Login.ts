@@ -2,9 +2,10 @@ import express from 'express';
 import LoginController from '../Controller/Controller-Login';
 const Router = express.Router();
 const controller = new LoginController();
+import { verifystate } from "../helpers/Virigystate";
 import { dispositivo } from '../helpers/dispositivo';
 // Parâmetros esperados no corpo da requisição: numeroAdesao, codigoAcesso
-Router.post('/generate2fa', controller.generate2fa);
+Router.post('/generate2fa',verifystate,controller.generate2fa);
 
 
 /*

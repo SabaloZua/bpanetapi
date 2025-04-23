@@ -7,17 +7,17 @@ const Router = express.Router();
 // Rota para transferência do mesmo banco
 // Parâmetros esperados no corpo da requisição: { idconta, contadestino, valor, descricao}
 // Retorno saldoactualizado
-Router.post("/transferenciaintra", verifystate, Controller.tranferenciaintrabancaria);
+Router.post("/transferenciaintra",  Controller.tranferenciaintrabancaria);
 
 // Rota para transferência de  bancos diferentes
 // Parâmetros esperados no corpo da requisição: { idconta, ibancontadestino, valor, descricao}
 // Retorno saldoactualizado
-Router.post("/transferenciainter", verifystate, Controller.tranferenciainterbancaria);
+Router.post("/transferenciainter",  Controller.tranferenciainterbancaria);
 
 // Rota para levantamento
 // Parâmetros esperados no corpo da requisição: { pin, valor,emaildestino,idconta}
 // Retorno saldoactualizado
-Router.post("/levantamento", verifystate, Controller.levantamento);
+Router.post("/levantamento",  Controller.levantamento);
 
 // Rota para obter transações com filtro de data
 // Parâmetro esperado na URL: idconta
@@ -27,8 +27,8 @@ Router.get("/gettrasacao/:idconta/:datainicio/:datafim", Controller.getTrasacao)
 // Rota para levantamento
 // Parâmetros esperados no corpo da requisição: { idconta, valor,telefonecontadestino}
 // Retorno saldoactualizado
-Router.post("/nahora", verifystate, Controller.nahora);
-Router.post("/beneficiarionahora/",verifystate, Controller.beneficiarioNaHora);
+Router.post("/nahora",  Controller.nahora);
+Router.post("/beneficiarionahora/", Controller.beneficiarioNaHora);
 
 // Rota para obter transações recentes limite 6
 // Parâmetro esperado na URL: idconta

@@ -195,6 +195,7 @@ export default class Trasacao {
         res.status(400).json({ message: "Cartão expirado" });
         return;
       }
+      
       if ((conta?.n_saldo || 0) < valor) {
         res.status(200).json({ message: "Saldo insuficiente" });
         return;

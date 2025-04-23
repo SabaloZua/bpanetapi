@@ -1,7 +1,12 @@
 import express from 'express';
 import ClienteController from '../Controller/Controller-Cliente';
+import multer from 'multer';
 const Router = express.Router();
 const Controller = new ClienteController();
+
+const upload=multer({
+    storage:multer.memoryStorage()
+})
 
    // Router.get('/:id', Controller.getalldata);
     Router.post('/actualizaSenha', Controller.actualizaSenha);
@@ -12,4 +17,5 @@ const Controller = new ClienteController();
     Router.post('/novascredencias', Controller.GeranovasCredenciais);
     Router.get('/perguntaseguranca/:email',Controller.buscarPergunta);
     Router.post("/resposta",Controller.verificarResposta);
+    Router.post ('/uploadfoto', upload.single('image'),Controller.uploadFoto);
 export default Router; 

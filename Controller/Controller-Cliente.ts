@@ -1,9 +1,12 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import 'dotenv/config'
 const bcrypt = require('bcrypt');
 import {  SendRecuparaCredencias} from '../Modules/SendRecuparaCredencias'
 import {numeroadessao,codigodeacesso} from '../Utils/Codigos'
 import { SendNovasCredentia } from '../Modules/SendNovasCredentia'
+import { initializeApp } from 'firebase/app';
+import { getStorage,ref, uploadBytes, getDownloadURL } from "firebase/storage";
 const prisma = new PrismaClient();
 export default class ClienteController {
 
@@ -22,6 +25,21 @@ export default class ClienteController {
     private generatecodigo2fa(): number {
         return Math.floor(Math.random() * 900000) + 100000
     }
+    // implementação das variaveis de ambiente
+    private firebaseApp=initializeApp({
+      apiKey: process.env.apiKey,
+      authDomain: process.env.authDomain,
+      projectId: process.env.projectId,
+      storageBucket: process.env.storageBucket,
+      messagingSenderId: process.env.messagingSenderId,
+      appId: process.env.appId,
+      measurementId: process.env.measurementId
+  })
+  private storageFirebase=getStorage(this.firebaseApp);
+
+  
+
+      
 
     public  actualizaSenha= async(req: Request, res: Response): Promise<void> =>{
 
@@ -66,6 +84,7 @@ export default class ClienteController {
             res.status(400).json({ message: 'Erro ao processar a sua solicitação tenta mais tarde'+erro });
         }
     }
+
     public EnviaEmail = async(req: Request, res: Response): Promise<void> =>{  
       try{
         const email = req.body.email;
@@ -270,4 +289,45 @@ export default class ClienteController {
       }
       }
 
+      public  uploadFoto= async(req: Request, res: Response): Promise<void> =>{
+        try{
+        const idconta = req.body.idconta;
+        if(!idconta) {
+            res.status(400).json({ message: 'ID da conta não fornecido' });
+            return;
+        }
+        const conta = await prisma.conta.findFirst({
+            where: { n_Idconta: parseInt(idconta) },
+            select: { n_Idcliente: true }
+        })
+        if(!conta){
+            res.status(400).json({ message: 'Conta não encontrada' });
+            return;
+        }
+          if(!req.file) {
+              res.status(400).json({ message: 'File not provided' });
+              return;
+          }
+          const StoregeRef=ref(this.storageFirebase,`Images/${req.file.originalname}`)
+          if(!req.file.buffer) {
+              res.status(400).json({ message: 'File buffer is empty' });
+              return;
+          }
+          await uploadBytes(StoregeRef,req.file.buffer,{
+              contentType:req.file.mimetype,
+          });
+          const caminho= await getDownloadURL(StoregeRef);
+          await prisma.images_cliente.create({
+              data:{
+                  n_Idcliente:conta.n_Idcliente,
+                  t_descricao:"Foto de perfil",
+                  t_caminho:caminho
+              }
+          })
+          res.status(200).json({message:"A foto actulizada com sucesso", filepath: caminho });
+        }catch(erro){
+          res.status(400).json({ message: 'Erro ao processar a sua solicitação tenta mais tarde'+erro });
+          return;
+        }
+        }
 }

@@ -47,6 +47,7 @@ model usuario{
   t_codigo2fa String?
   t_primeiroLogin Boolean? @default(true)
   n_Idconta Int @unique
+  n_tentativas Int? @default(0)
   conta conta  @relation(fields: [n_Idconta], references: [n_Idconta], onDelete: Cascade, onUpdate: Cascade)
   dispositivo    dispositivo[]
   
@@ -124,6 +125,7 @@ model perguntaSeguranca {
   t_pergunta  String? 
   t_resposta String?
   n_Idconta  Int
+  n_tentativas Int? @default(0)
   conta    conta    @relation(fields: [n_Idconta], references: [n_Idconta], onDelete: Cascade, onUpdate: Cascade)
 }
 model LevantamentoSemCartao {
