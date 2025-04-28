@@ -29,7 +29,8 @@
   },
   "scripts": {
     "postinstall": "prisma generate",
-    "dev": "tsx watch --env-file .env app.ts"
+    "dev": "tsx watch --env-file .env app.ts",
+     "build": "prisma migrate deploy "
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.8",
