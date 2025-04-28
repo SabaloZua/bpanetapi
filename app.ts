@@ -32,7 +32,7 @@ app.use(function(req, res, next){
    });
 
 app.get('/', (req:Request, res:Response) => {
-    res.send('API is running...');	
+    res.send('API  funcionando');	
 });
 
 app.use('/cliente', cliente);

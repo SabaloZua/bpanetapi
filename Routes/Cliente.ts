@@ -17,5 +17,5 @@ const upload=multer({
     Router.post('/novascredencias', Controller.GeranovasCredenciais);
     Router.get('/perguntaseguranca/:email',Controller.buscarPergunta);
     Router.post("/resposta",Controller.verificarResposta);
-    Router.post ('/uploadfoto', upload.single('image'),Controller.uploadFoto);
+    Router.post ('/uploadfoto/:idconta', upload.single('image'),Controller.uploadFoto);
 export default Router; 

@@ -27,6 +27,11 @@ export default class Conta {
                 t_email_address: true,
               },
             },
+            images_cliente: {
+              select: {
+                t_caminho:true
+              	}
+            }
           },
         },
       },
@@ -58,6 +63,7 @@ export default class Conta {
         nome:data.cliente.t_nomeclient,
         bi:data.cliente.t_BI,
         email:data.cliente.client_email[0].t_email_address,
+        imagem:data.cliente.images_cliente[0].t_caminho,
       }
     };
 

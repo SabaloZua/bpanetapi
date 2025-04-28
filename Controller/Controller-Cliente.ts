@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import 'dotenv/config'
 const bcrypt = require('bcrypt');
 import {  SendRecuparaCredencias} from '../Modules/SendRecuparaCredencias'
 import {numeroadessao,codigodeacesso} from '../Utils/Codigos'
 import { SendNovasCredentia } from '../Modules/SendNovasCredentia'
 import { initializeApp } from 'firebase/app';
 import { getStorage,ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import 'dotenv/config'
 const prisma = new PrismaClient();
 export default class ClienteController {
 
@@ -291,7 +291,7 @@ export default class ClienteController {
 
       public  uploadFoto= async(req: Request, res: Response): Promise<void> =>{
         try{
-        const idconta = req.body.idconta;
+        const idconta = req.params.idconta;
         if(!idconta) {
             res.status(400).json({ message: 'ID da conta não fornecido' });
             return;
@@ -308,6 +308,8 @@ export default class ClienteController {
               res.status(400).json({ message: 'File not provided' });
               return;
           }
+          console.log("file",req.file)
+          console.log("file",req.file.buffer);
           const StoregeRef=ref(this.storageFirebase,`Images/${req.file.originalname}`)
           if(!req.file.buffer) {
               res.status(400).json({ message: 'File buffer is empty' });
