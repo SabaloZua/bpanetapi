@@ -43,32 +43,33 @@ export default class Conta {
 
     const formatedData = {
       
-        id:data.n_Idconta,
-        iban:data.t_Iban,
-        saldo:data.n_saldo,
-        nba:data.t_Nba,
-        dataAbertura:data.t_dataAbertura,
-        numeroConta:data.t_numeroconta,
+        id:data?.n_Idconta,
+        iban:data?.t_Iban,
+        saldo:data?.n_saldo,
+        nba:data?.t_Nba,
+        dataAbertura:data?.t_dataAbertura,
+        numeroConta:data?.t_numeroconta,
       
 
       cartao:{
-        idCartao:data.cartao[0].n_Idcartao,
-        descricao:data.cartao[0].t_descricao,
-        dataValidade:data.cartao[0].t_datavalidade,
-        estado:data.cartao[0].t_estado,
-        numero:data.cartao[0].t_numero,
+        idCartao:data?.cartao[0]?.n_Idcartao,
+        descricao:data?.cartao[0]?.t_descricao,
+        dataValidade:data?.cartao[0]?.t_datavalidade,
+        estado:data?.cartao[0]?.t_estado,
+        numero:data?.cartao[0]?.t_numero,
       },
 
       cliente:{
-        nome:data.cliente.t_nomeclient,
-        bi:data.cliente.t_BI,
-        email:data.cliente.client_email[0].t_email_address,
-        imagem:data.cliente.images_cliente[0].t_caminho,
+        nome:data?.cliente.t_nomeclient,
+        bi:data?.cliente?.t_BI,
+        email:data?.cliente.client_email[0]?.t_email_address,
+        imagem:data?.cliente.images_cliente[0]?.t_caminho,
       }
     };
 
     res.json({ dados: formatedData });
   }catch(err){
+    console.error("Erro ao buscar dados:", err);
     res.status(400).json({message:err})
   }
   };
