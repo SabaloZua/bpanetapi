@@ -7,11 +7,14 @@ import { sendcrendetias } from '../Modules/SendCredentias'
 import { sendeemailverfy } from '../Modules/SendEmailVerify';
 import {numerocartao, codigodeacesso, numeroadessao,createIBAN,numeroconta} from '../Utils/Codigos';
 import {formatDate} from '../Utils/Datas'
+import 'dotenv/config'
 const prisma = new PrismaClient();
 
 
 export default class CredenciaisController {
 
+    private BPAapi=process.env.bpaAPI //
+    private BPAfront=process.env.bpaFront//
     private async encrypt(pin: string) {
         const salt = await bcrypt.genSalt(12);
         const OTPHash = await bcrypt.hash(pin, salt);
@@ -31,6 +34,7 @@ export default class CredenciaisController {
 
     public sendvalideemail = async (req: Request, res: Response): Promise<void> => {
         const email = req.body.email;
+
         const result = await prisma.client_email.findFirst({
             where: { t_email_address: email },
             select: { t_verified: true, n_email_id: true, n_Idcliente: true }
@@ -41,7 +45,8 @@ export default class CredenciaisController {
         }
         try {
             const token = crypto.randomBytes(32).toString('hex');
-            const url = `http://localhost:5000/openacount/validatemail/${email}/${token}`
+            const url = `${this.BPAapi}/openacount/validatemail/${email}/${token}`
+            // const url = `http://localhost:5000/openacount/validatemail/${email}/${token}`
             await prisma.client_email.create({
                 data: {
                     t_email_address: email,
@@ -75,7 +80,8 @@ export default class CredenciaisController {
         })
 
         if (!result || result.t_verified == true) {
-            res.redirect('http://localhost:3000/token-expired');
+            res.redirect(`${this.BPAfront}/token-expired`);
+            //res.redirect('http://localhost:3000/token-expired');
             return;
         }
         const updateClienteEmail = await prisma.client_email.update({
@@ -88,7 +94,7 @@ export default class CredenciaisController {
             }
         })
 
-        res.redirect('http://localhost:3000/registo/dados-pessoais')
+        res.redirect(`${this.BPAfront}/registo/dados-pessoais`)
     }catch(error){
         res.status(400).json({message:"Erro  ao processar sua solicitação"})
     }

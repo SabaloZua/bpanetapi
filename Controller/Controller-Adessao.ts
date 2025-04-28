@@ -5,10 +5,13 @@ import crypto from 'crypto'
 import { sendeemailverfy } from '../Modules/SendEmailVerify';
 import { sendcrendetias } from '../Modules/SendCredentiaAD'
 import {numeroadessao,codigodeacesso} from '../Utils/Codigos'
-
+import 'dotenv/config'
 const prisma = new PrismaClient();
 
 export default class ControllerAdessao {
+
+  private BPAapi=process.env.bpaAPI //
+  private BPAfront=process.env.bpaFront//
   private async encrypt(pin: string) {
     const salt = await bcrypt.genSalt(12);
     const OTPHash = await bcrypt.hash(pin, salt);
@@ -30,7 +33,7 @@ export default class ControllerAdessao {
 
       try {
         const token = crypto.randomBytes(32).toString('hex');
-        const url = `http://localhost:5000/adesao/validatemail/${email}/${token}`
+        const url = `${this.BPAapi}/adesao/validatemail/${email}/${token}`
         await prisma.client_email.update({
           where: {
             t_email_address: email
@@ -122,7 +125,7 @@ export default class ControllerAdessao {
     })
 
     if (!result || result.t_verified == true) {
-      res.redirect('http://localhost:3000/token-expired');
+      res.redirect(`${this.BPAfront}/token-expired`);
       return;
     }
 
@@ -136,7 +139,7 @@ export default class ControllerAdessao {
       }
     })
 
-    res.redirect('http://localhost:3000/adesao/dados')
+    res.redirect(`${this.BPAfront}/adesao/dados`)
   }catch(erro){
     res.status(400).json({message:"Erro ao processar a solicitação"});
   }

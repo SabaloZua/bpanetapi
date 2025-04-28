@@ -300,6 +300,16 @@ export default class ClienteController {
             where: { n_Idconta: parseInt(idconta) },
             select: { n_Idcliente: true }
         })
+        const fotoperfil=await prisma.images_cliente.findFirst({
+          where:{
+            n_Idcliente:conta?.n_Idcliente
+          },
+          select:{
+            t_caminho:true,
+            n_idimagesn:true
+          }
+        })
+
         if(!conta){
             res.status(400).json({ message: 'Conta não encontrada' });
             return;
@@ -319,13 +329,27 @@ export default class ClienteController {
               contentType:req.file.mimetype,
           });
           const caminho= await getDownloadURL(StoregeRef);
-          await prisma.images_cliente.create({
+          
+          if(fotoperfil?.t_caminho){
+            await prisma.images_cliente.update({
+              where:{
+                n_idimagesn:fotoperfil.n_idimagesn
+              },
+              data:{
+                t_caminho:caminho
+              }
+          })
+          }else{
+            await prisma.images_cliente.create({
               data:{
                   n_Idcliente:conta.n_Idcliente,
                   t_descricao:"Foto de perfil",
                   t_caminho:caminho
               }
           })
+          }
+         
+       
           res.status(200).json({message:"A foto actulizada com sucesso", filepath: caminho });
         }catch(erro){
           res.status(400).json({ message: 'Erro ao processar a sua solicitação tenta mais tarde'+erro });

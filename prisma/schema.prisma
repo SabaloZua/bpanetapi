@@ -94,7 +94,7 @@ model images_cliente {
   n_idimagesn Int     @id @default(autoincrement())
   n_Idcliente Int
   t_descricao String? @db.VarChar
-  t_caminho   String?
+  t_caminho   String
   cliente     cliente @relation(fields: [n_Idcliente], references: [n_Idcliente], onDelete: NoAction, onUpdate: NoAction)
 }
 
