@@ -54,7 +54,7 @@ export default class CredenciaisController {
                     t_token: token,
                 }
             })
-            sendeemailverfy(email, url)
+           await sendeemailverfy(email, url)
                 .catch(err => console.error("Erro ao enviar código 2FA:", err));
             res.status(200).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
 
