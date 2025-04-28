@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from '@prisma/client';
 import { sendalert } from '../Modules/SendAlert'
+import 'dotenv/config'
 const prisma = new PrismaClient();
 
 
@@ -10,7 +11,8 @@ export const dispositivo = async (req: Request, res: Response, next: NextFunctio
     const iddispositivo: string = req.body.iddispositivo;
     const sitemaDispositvo: string = req.body.sistemadispositivo;
     const navegadorDispositivo: string = req.body.navegadordispositivo;
-
+    const BPAapi=process.env.bpaAPI //
+    const BPAfront=process.env.bpaFront//
     const client = await prisma.usuario.findFirst({
         where: {
             t_codigo2fa: codigo2fa.toString()
@@ -55,9 +57,9 @@ export const dispositivo = async (req: Request, res: Response, next: NextFunctio
             })
 
             if (client_email) {
-                const urlSim = `http://localhost:3000/confirmar?dispositivo=${iddispositivo}&usuario=${client.n_id_usuario}`
+                const urlSim = `${BPAfront}/confirmar?dispositivo=${iddispositivo}&usuario=${client.n_id_usuario}`
 
-                sendalert(client_email.t_email_address, navegadorDispositivo, sitemaDispositvo, urlSim)
+               await sendalert(client_email.t_email_address, navegadorDispositivo, sitemaDispositvo, urlSim)
         
             }
             res.status(400).json({ message: "Tentativa de iniciar sessão em um Dispositivo desconhecido responda ao email enviado para confirmar a sua identidade" })

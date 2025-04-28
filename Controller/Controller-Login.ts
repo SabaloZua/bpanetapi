@@ -70,7 +70,7 @@ export default class CredenciaisController {
                 });
 
                 if (client_email) {
-                    sendcodigo2fa(client_email.t_email_address, codigo2fa)
+                   await sendcodigo2fa(client_email.t_email_address, codigo2fa)
                         .catch(err => console.error("Erro ao enviar código 2FA:", err));
                     res.status(200).json({ message: "Email enviado para a sua caixa de entrada. Por favor verifique" });
                 }

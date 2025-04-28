@@ -124,7 +124,7 @@ export default class Deposito {
                      valor:formatarmoeda(valor),
                      nomeDP: tipo_deposito.t_nome
                     }
-                  senddeposito(dadosEmail)
+                 await senddeposito(dadosEmail)
         res.status(200).json({
           message: 'Deposito efectuado com sucesso Verifica a seu Email',
           saldoactualizado:saldoactualizado,

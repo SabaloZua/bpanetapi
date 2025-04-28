@@ -42,7 +42,7 @@ export default class ControllerAdessao {
             t_token: token,
           }
         })
-        sendeemailverfy(email, url)
+       await sendeemailverfy(email, url)
           .catch(err => console.error("Erro ao enviar código 2FA:", err));
         res.status(200).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
 
@@ -134,7 +134,6 @@ export default class ControllerAdessao {
         t_email_address: email
       },
       data: {
-        t_verified: true,
         t_token:""
       }
     })
@@ -165,6 +164,14 @@ export default class ControllerAdessao {
           t_email_address: true,
         }
       })
+       await prisma.client_email.update({
+        where: {
+          t_email_address: email
+        },
+        data: {
+          t_verified: true,
+        }
+      })
 
       const usuario= await prisma.usuario.create({
         data: {
@@ -183,7 +190,7 @@ export default class ControllerAdessao {
         }
       });
       
-      sendcrendetias(client_email?.t_email_address, numeroAdessao.toString(), createAccessCode.toString())
+    await sendcrendetias(client_email?.t_email_address, numeroAdessao.toString(), createAccessCode.toString())
         .catch(err => console.error("Erro ao enviar credenciais:", err));
 
       res.status(200).json({

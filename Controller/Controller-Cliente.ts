@@ -217,7 +217,7 @@ export default class ClienteController {
               });
               
             
-              SendNovasCredentia(client_email?.t_email_address, numeroAdessao.toString())
+             await SendNovasCredentia(client_email?.t_email_address, numeroAdessao.toString())
                 .catch(err => console.error("Erro ao enviar credenciais:", err));
         
               res.status(200).json({

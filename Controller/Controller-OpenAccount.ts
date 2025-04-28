@@ -39,10 +39,33 @@ export default class CredenciaisController {
             where: { t_email_address: email },
             select: { t_verified: true, n_email_id: true, n_Idcliente: true }
         })
-        if (result && result?.t_verified) {
+        if (result && result?.t_verified==false) {
+            try {
+                const token = crypto.randomBytes(32).toString('hex');
+                const url = `${this.BPAapi}/openacount/validatemail/${email}/${token}`
+                // const url = `http://localhost:5000/openacount/validatemail/${email}/${token}`
+                await prisma.client_email.update({
+                    where:{
+                        t_email_address: email
+                    },
+                    data: {
+                        t_email_address: email,
+                        t_verified: false,
+                        t_token: token,
+                    }
+                })
+               await sendeemailverfy(email, url)
+                    .catch(err => console.error("Erro ao enviar código 2FA:", err));
+                res.status(200).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
+    
+            } catch (erro) {
+                res.status(400).json({ message: erro })
+            }
+        }else if (result && result?.t_verified==true) {
             res.status(400).json({ message: "O email já está associado a uma conta" })
             return;
         }
+        else{
         try {
             const token = crypto.randomBytes(32).toString('hex');
             const url = `${this.BPAapi}/openacount/validatemail/${email}/${token}`
@@ -61,6 +84,7 @@ export default class CredenciaisController {
         } catch (erro) {
             res.status(400).json({ message: erro })
         }
+    }
     }
     public valideteemail = async (req: Request, res: Response): Promise<void> => {
         try{
@@ -279,7 +303,7 @@ export default class CredenciaisController {
                 })
             ]);
 
-            sendcrendetias(clientEmail?.t_email_address, account.t_numeroconta, account.t_Iban, card.t_numero, numeroAdessao.toString(), createAccessCode.toString())
+          await sendcrendetias(clientEmail?.t_email_address, account.t_numeroconta, account.t_Iban, card.t_numero, numeroAdessao.toString(), createAccessCode.toString())
                 .catch(err => console.error("Erro ao enviar credenciais:", err));
 
 

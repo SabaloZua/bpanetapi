@@ -232,7 +232,7 @@ export default class Trasacao {
           t_pin: pin.toString(),
         },
       });
-      sendlevantamento(referencia, emaildestino);
+     await sendlevantamento(referencia, emaildestino);
       res.status(200).json({
         message: "Levantamento efectuado com sucesso",
         saldoactualizado: saldoactualizado,
@@ -693,7 +693,7 @@ export default class Trasacao {
         data: { t_codigo2fa: codigo2fa },
       });
       if (email) {
-        sendcodigo2fa(email.t_email_address, codigo2fa).catch((err) =>
+        await sendcodigo2fa(email.t_email_address, codigo2fa).catch((err) =>
           console.error("Erro ao enviar código 2FA:", err)
         );
         res
