@@ -28,6 +28,7 @@
     "typescript": "^5.7.3"
   },
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "tsx watch --env-file .env app.ts"
   },
   "devDependencies": {
