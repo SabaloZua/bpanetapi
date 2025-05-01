@@ -90,7 +90,7 @@ export default class ClienteController {
         const email = req.body.email;
         const codigo= this.generatecodigo2fa().toString();
        const verificaEmail =await prisma.client_email.findFirst({
-        where: { t_email_address: email },
+        where: { t_email_address: email, t_verified:true},
         select: { n_Idcliente: true, t_email_address: true}
        
     })
