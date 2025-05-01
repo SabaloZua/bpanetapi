@@ -110,7 +110,7 @@ export default class ClienteController {
           }
       })
 
-     SendRecuparaCredencias(email,codigo);
+   await SendRecuparaCredencias(email,codigo);
      res.status(200).json({ message: "Email enviado para a sua caixa de entrada. Por favor verifique" });
      return;
 

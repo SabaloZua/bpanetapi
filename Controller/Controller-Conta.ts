@@ -73,5 +73,31 @@ export default class Conta {
     res.status(400).json({message:err})
   }
   };
+  public blouquarcartao=async (req:Request,res:Response): Promise <void> =>{
+    const numerocartao=req.body.numerocartao;
+
+    if(!numerocartao){
+      res.status(400).json({message:'dados vazios'});
+      return;
+    }
+    const cartão=await prisma.cartao.findFirst({
+      where:{
+        t_numero:numerocartao
+      },
+      select:{
+        n_Idcartao:true
+      }
+    })
+    await prisma.cartao.update({
+      where:{
+        n_Idcartao:cartão?.n_Idcartao
+      },
+      data:{
+        t_estado:"bloqueado"
+      }
+    })
+    res.status(200).json({message:"Cartão bloqueado com sucesso"});
+
+  }
 
 }

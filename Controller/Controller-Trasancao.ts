@@ -191,8 +191,8 @@ export default class Trasacao {
         res.status(400).json({ message: "Conta não encontrada" });
         return;
       }
-      if (conta?.cartao[0].t_estado == "expirado") {
-        res.status(400).json({ message: "Cartão expirado" });
+      if (conta?.cartao[0].t_estado == "expirado" || conta?.cartao[0].t_estado=="bloqueado") {
+        res.status(400).json({ message: conta?.cartao[0].t_estado =="expirado" ? "Cartão expirado": "Cartão Bloqueado" });
         return;
       }
       

@@ -41,5 +41,6 @@ const Controller = new ContaController();
 }
 */ 
 Router.get('/dadoscliente/:idconta',Controller.getalldata)
+Router.post('/cartao/bloquear',Controller.blouquarcartao);
 
 export default Router; 
