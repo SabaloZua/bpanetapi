@@ -70,7 +70,8 @@ export const comprovativo = async (dados: dadosComprovativo): Promise<string> =>
                     displayHeaderFooter: true,
                     headerTemplate: `<div></div>`,
                     footerTemplate: `<div style="width:100%; text-align:right; font-size:8px; margin-right:20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
-                    format: "A4",
+                     width: '210mm',
+                    height: '297mm',
                     margin: {
                         top: "40px",
                         bottom: "40px", // margem ajustada para acomodar o rodapé
@@ -126,7 +127,8 @@ export const extrato = async (dados: dadosExtrato): Promise<string> => {
                         displayHeaderFooter: true,
                         headerTemplate: `<div></div>`,
                         footerTemplate: `<div style="width:100%; text-align:right; font-size:8px; margin-right:20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
-                        format: "A4",
+                       width: '210mm',
+                        height: '297mm',
                         margin: {
                             top: "5px",
                             bottom: "20px", // margem ajustada para acomodar o rodapé

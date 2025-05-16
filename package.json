@@ -24,7 +24,7 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.0",
     "prisma": "^6.3.1",
-    "puppeteer-core": "^24.8.2",
+    "puppeteer-core": "^10.4.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   },
