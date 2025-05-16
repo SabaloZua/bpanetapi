@@ -54,7 +54,7 @@ export default class CredenciaisController {
                         t_token: token,
                     }
                 })
-               await sendeemailverfy(email, url)
+                await sendeemailverfy(email, url)
                     .catch(err => console.error("Erro ao enviar código 2FA:", err));
                 res.status(200).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
     
@@ -77,7 +77,7 @@ export default class CredenciaisController {
                     t_token: token,
                 }
             })
-           await sendeemailverfy(email, url)
+          await  sendeemailverfy(email, url)
                 .catch(err => console.error("Erro ao enviar código 2FA:", err));
             res.status(200).json({ message: 'Email de Verificação enviado verifique a sua caixa de entrada' })
 
@@ -113,7 +113,6 @@ export default class CredenciaisController {
                 t_email_address: email
             },
             data: {
-                t_verified: true,
                 t_token: ""
             }
         })
@@ -219,6 +218,7 @@ export default class CredenciaisController {
                         t_email_address: emailCliente
                     },
                     data: {
+                        t_verified: true,
                         cliente: {
                             connect: {
                                 n_Idcliente: cliente.n_Idcliente
@@ -303,7 +303,7 @@ export default class CredenciaisController {
                 })
             ]);
 
-          await sendcrendetias(clientEmail?.t_email_address, account.t_numeroconta, account.t_Iban, card.t_numero, numeroAdessao.toString(), createAccessCode.toString())
+         await  sendcrendetias(clientEmail?.t_email_address, account.t_numeroconta, account.t_Iban, card.t_numero, numeroAdessao.toString(), createAccessCode.toString())
                 .catch(err => console.error("Erro ao enviar credenciais:", err));
 
 
