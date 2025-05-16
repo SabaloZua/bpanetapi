@@ -1,7 +1,7 @@
 import path from 'path';
 import { formatarmoeda } from '../Utils/Moeda'
 import ejs from 'ejs'
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
 import chromium from 'chrome-aws-lambda';
 import { formatDate } from '../Utils/Datas';
 
