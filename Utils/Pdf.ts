@@ -42,7 +42,7 @@ export const comprovativo = async (dados: dadosComprovativo): Promise<string> =>
                 args: chromium.args,
                 defaultViewport: chromium.defaultViewport,
                 executablePath: await chromium.executablePath,
-                headless: chromium.headless,
+                headless: true,
             });
             const page = await browser.newPage();
             const filePath1 = path.join(__dirname, "../", "Views", "comprovativo.ejs");
