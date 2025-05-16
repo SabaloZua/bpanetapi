@@ -141,7 +141,7 @@ export default class Trasacao {
             n_contaorigem: contaFrom.n_Idconta,
             t_descricao: descricao,
             t_datatrasacao: formatDate(new Date()),
-            t_debito: formatarmoeda(valor),
+            t_debito: valor,
             t_saldoactual: formatarmoeda(saldoactualizadoFrom),
             t_benefeciario: benefeciario.toString(),
           },
@@ -196,6 +196,7 @@ export default class Trasacao {
         return;
       }
       
+      
       if ((conta?.n_saldo || 0) < valor) {
         res.status(200).json({ message: "Saldo insuficiente" });
         return;
@@ -232,7 +233,7 @@ export default class Trasacao {
           t_pin: pin.toString(),
         },
       });
-     await sendlevantamento(referencia, emaildestino);
+      sendlevantamento(referencia, emaildestino);
       res.status(200).json({
         message: "Levantamento efectuado com sucesso",
         saldoactualizado: saldoactualizado,
@@ -374,7 +375,7 @@ export default class Trasacao {
     try {
       const idLevantamento = req.body.idlevantamento;
       const Levantamento = await prisma.levantamentoSemCartao.findFirst({
-        where: { n_Idlevantamento: idLevantamento },
+        where: { n_Idlevantamento: idLevantamento, t_estado: "pendente" },
         select: {
           n_valor: true,
           n_Idconta: true,
@@ -385,8 +386,14 @@ export default class Trasacao {
           },
         },
       });
+      if (!Levantamento) {
+        res.status(400).json({ message: "Levantamento  já processado" });
+        return;
+      }
 
-      const novosaldo = (Levantamento?.conta?.n_saldo ?? 0) + (Levantamento?.n_valor ?? 0);
+      const valor= parseInt(Levantamento?.n_valor.toString() ?? "0");
+      const idconta = Levantamento?.n_Idconta || 0;
+      const novosaldo = (Levantamento?.conta?.n_saldo ?? 0) + (valor ?? 0);
 
       await prisma.conta.update({
         where: {
@@ -398,6 +405,16 @@ export default class Trasacao {
       });
       await prisma.levantamentoSemCartao.delete({
         where: { n_Idlevantamento: idLevantamento },
+      });
+       await prisma.trasacao.create({
+        data: {
+          t_contadestino: "",
+          n_contaorigem: idconta,
+          t_descricao: "Cancelamento de Levantamento",
+          t_datatrasacao: formatDate(new Date()),
+          t_credito: valor.toString(),
+          t_saldoactual: formatarmoeda(novosaldo),
+        },
       });
       res.status(200).json({ message: "Levantamento Cancelado" });
     } catch (erro) {
@@ -464,7 +481,7 @@ export default class Trasacao {
             n_contaorigem: contaFrom.n_Idconta,
             t_descricao: "Transferencia intrabancaria",
             t_datatrasacao: formatDate(new Date()),
-            t_debito: formatarmoeda(valor),
+            t_debito: valor,
             t_saldoactual: formatarmoeda(saldoactualizadoFrom),
             t_benefeciario: contaTo?.cliente.t_nomeclient,
           },
@@ -476,7 +493,7 @@ export default class Trasacao {
             n_contaorigem: contaTo!.n_Idconta,
             t_descricao: "Trasnferencia intrabancaria",
             t_datatrasacao: formatDate(new Date()),
-            t_credito: formatarmoeda(parseInt(valor)),
+            t_credito: valor,
             t_saldoactual: formatarmoeda(saldoactualizadoTo),
           },
         });
@@ -693,7 +710,7 @@ export default class Trasacao {
         data: { t_codigo2fa: codigo2fa },
       });
       if (email) {
-        await sendcodigo2fa(email.t_email_address, codigo2fa).catch((err) =>
+          sendcodigo2fa(email.t_email_address, codigo2fa).catch((err) =>
           console.error("Erro ao enviar código 2FA:", err)
         );
         res

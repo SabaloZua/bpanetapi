@@ -33,28 +33,66 @@ async function checkExpiredDeposits() {
                     t_nome:true
                 }
             })
-            const montante = deposito.n_valor.add(deposito.n_jurosLiquidos);
+            const montante = deposito.n_valor + deposito.n_jurosLiquidos;
             console.log(`Processando depósito ${deposito.n_iddeposito}: montante a creditar: ${montante}`);
 
-        const conta =    await prisma.conta.update({
+            const conta = await prisma.conta.findFirst({
+                where: { n_Idconta: deposito.n_Idconta },
+                select:{
+                    n_saldo:true,
+                    n_Idconta:true
+                }
+              })
+              await prisma.conta.update({
                 where: { n_Idconta: deposito.n_Idconta },
                 data: { n_saldo: { increment: parseFloat(montante.toString()) } }
-            });
 
+            });
+            if (!conta) {
+                console.error(`Conta não encontrada para o depósito ${deposito.n_iddeposito}`);
+                continue;
+            }
             await prisma.deposito_prazo.update({
                 where: { n_iddeposito: deposito.n_iddeposito },
                 data: { t_status: "CONCLUÍDO" }
             });
-            const trasacaoTO = await prisma.trasacao.create({
+            
+            let saldo=conta.n_saldo + deposito.n_valor;
+             await prisma.trasacao.create({
                 data: {
                   t_contadestino: "",
                   n_contaorigem: deposito.n_Idconta,
-                  t_descricao: `Recebimento do deposito do ${tipo?.t_nome}`,
+                  t_descricao: `Reembolso do ${tipo?.t_nome}`,
                   t_datatrasacao: formatDate(new Date()),
-                  t_credito: montante.toString(),
-                  t_saldoactual: formatarmoeda(conta.n_saldo),
+                  t_credito: deposito.n_valor.toString(),
+                  t_saldoactual: formatarmoeda(saldo),
                 },
               });
+              saldo= saldo + deposito.n_jurosBrutos;
+              await prisma.trasacao.create({
+                data: {
+                  t_contadestino: "",
+                  n_contaorigem: deposito.n_Idconta,
+                  t_descricao: `Juros do  ${tipo?.t_nome}`,
+                  t_datatrasacao: formatDate(new Date()),
+                  t_credito: deposito.n_jurosBrutos.toString(),
+                  t_saldoactual: formatarmoeda(saldo),
+                },
+              });
+              saldo= saldo - (Number(deposito.n_jurosBrutos) * 0.1);
+            await prisma.trasacao.create({
+                data: {
+                  t_contadestino: "",
+                  n_contaorigem: deposito.n_Idconta,
+                  t_descricao: `Imposto do  sobre aplicação de capital`,
+                  t_datatrasacao: formatDate(new Date()),
+                  t_debito: (Math.round(Number(deposito.n_jurosBrutos) * 0.1)).toString() ,
+                  t_saldoactual: formatarmoeda(saldo),
+                },
+              });
+
+           
+            saldo=0;
         }
           
         

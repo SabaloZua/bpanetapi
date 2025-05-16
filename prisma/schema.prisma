@@ -167,11 +167,11 @@ model sub_produtos{
 
 model deposito_prazo {
   n_iddeposito                Int       @id @default(autoincrement())
-  n_valor             Decimal   @db.Decimal(15,2)
+  n_valor             Int  
   t_dataCriacao       DateTime  @default(now())
   t_dataVencimento    DateTime
-  n_jurosBrutos       Decimal   @db.Decimal(15,2)
-  n_jurosLiquidos     Decimal   @db.Decimal(15,2)
+  n_jurosBrutos       Int   
+  n_jurosLiquidos     Int   
   n_Idconta         Int
   t_status            String    @default("ATIVO") // ATIVO, LIQUIDADO, CANCELADO
   n_idtipodeposito Int
