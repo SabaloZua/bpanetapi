@@ -12,6 +12,7 @@ import Admin from './Routes/Admin';
 import Deposito from './Routes/Deposito';
 import "./Modules/Depositos";
 import "./Modules/VerificaCartão";
+import "./Modules/Lenvantamentos";
 import { Request, Response } from 'express';
 
 const port = process.env.PORT ? Number(process.env.PORT) : 5000;
