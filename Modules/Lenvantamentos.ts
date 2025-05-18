@@ -2,16 +2,22 @@ import cron from "node-cron";
 import { PrismaClient } from "@prisma/client";
 import { formatDate } from "../Utils/Datas";
 import { formatarmoeda } from "../Utils/Moeda";
+import { DateTime } from "luxon";
 
 const prisma = new PrismaClient();
 
-async function checkExpiredWithdrawals() {
+const hojeEmLuanda = DateTime.now()
+  .setZone("Africa/Luanda")
+  .startOf("day")
+  .toJSDate();
+
+  async function checkExpiredWithdrawals() {
     try {
         console.log("Verificando levantamentos expirados...");
 
         const levantamentosExpirados = await prisma.levantamentoSemCartao.findMany({
             where: {
-                t_data_expiracao: { lte: new Date() },
+                t_data_expiracao: { lte: hojeEmLuanda },
                 t_estado: "pendente"
             }
         });
