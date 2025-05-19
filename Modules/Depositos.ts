@@ -20,7 +20,7 @@ async function checkExpiredDeposits() {
 
         const depositosVencidos = await prisma.deposito_prazo.findMany({
             where: {
-                t_dataVencimento: { lte: hojeEmLuanda  },
+                t_dataVencimento: { lte: new Date()  },
                 t_status: "ATIVO"
             }
         });
@@ -106,6 +106,4 @@ async function checkExpiredDeposits() {
 cron.schedule("0 0 * * *", () => {
     console.log("Executando cron jobs para depósitos...");
     checkExpiredDeposits();
-}, {
-    timezone: "Africa/Luanda"
 });

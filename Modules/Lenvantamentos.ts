@@ -17,7 +17,7 @@ const hojeEmLuanda = DateTime.now()
 
         const levantamentosExpirados = await prisma.levantamentoSemCartao.findMany({
             where: {
-                t_data_expiracao: { lte: hojeEmLuanda },
+                t_data_expiracao: { lte: new Date() },
                 t_estado: "pendente"
             }
         });
@@ -56,6 +56,4 @@ const hojeEmLuanda = DateTime.now()
 cron.schedule("0 0 * * *", () => {
     console.log("Executando cron job para levantamentos expirados...");
     checkExpiredWithdrawals();
-}, {
-    timezone: "Africa/Luanda"
 });
