@@ -2,7 +2,7 @@ import path from 'path';
 import { formatarmoeda } from '../Utils/Moeda'
 import ejs from 'ejs'
 import puppeteer from "puppeteer-core";
-import chromium from 'chrome-aws-lambda';
+import chromium from '@sparticuz/chromium';
 import { formatDate } from '../Utils/Datas';
 
 

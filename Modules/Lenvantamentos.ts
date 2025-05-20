@@ -1,17 +1,17 @@
-import cron from "node-cron";
+//import cron from "node-cron";
 import { PrismaClient } from "@prisma/client";
 import { formatDate } from "../Utils/Datas";
 import { formatarmoeda } from "../Utils/Moeda";
-import { DateTime } from "luxon";
+//import { DateTime } from "luxon";
 
 const prisma = new PrismaClient();
 
-const hojeEmLuanda = DateTime.now()
-  .setZone("Africa/Luanda")
-  .startOf("day")
-  .toJSDate();
+// const hojeEmLuanda = DateTime.now()
+//   .setZone("Africa/Luanda")
+//   .startOf("day")
+//   .toJSDate();
 
-  async function checkExpiredWithdrawals() {
+ export default async function VerificaLevantamentos() {
     try {
         console.log("Verificando levantamentos expirados...");
 
@@ -53,7 +53,7 @@ const hojeEmLuanda = DateTime.now()
 }
 
 // Agendando o job para ser executado diariamente à meia-noite (fuso Angola)
-cron.schedule("0 0 * * *", () => {
-    console.log("Executando cron job para levantamentos expirados...");
-    checkExpiredWithdrawals();
-});
+// cron.schedule("0 0 * * *", () => {
+//     console.log("Executando cron job para levantamentos expirados...");
+//     checkExpiredWithdrawals();
+// });

@@ -11,5 +11,9 @@
             "src":"/(.*)",
             "dest":"/app.ts"
         }
-    ]
+    ],
+    "crons": [{
+    "path": "/agendamentos/cron",
+    "schedule": "0 0 * * *"
+  }]
 }

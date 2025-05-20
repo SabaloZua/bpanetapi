@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@prisma/client": "^6.3.1",
+    "@sparticuz/chromium": "^106.0.2",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/luxon": "^3.6.2",
@@ -11,7 +12,6 @@
     "@types/puppeteer": "^5.4.7",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
-    "chrome-aws-lambda": "^10.1.0",
     "cookie-parser": "^1.4.7",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
@@ -24,7 +24,7 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.0",
     "prisma": "^6.3.1",
-    "puppeteer-core": "^10.4.0",
+    "puppeteer-core": "^24.8.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   },

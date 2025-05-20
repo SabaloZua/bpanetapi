@@ -1,19 +1,19 @@
-import cron from "node-cron";
+//import cron from "node-cron";
 import { PrismaClient } from "@prisma/client";
 import { formatDate } from "../Utils/Datas";
 import { formatarmoeda } from "../Utils/Moeda";
 
-import { DateTime } from "luxon";
+//import { DateTime } from "luxon";
 
-const hojeEmLuanda = DateTime.now()
-  .setZone("Africa/Luanda")
-  .startOf("day")
-  .toJSDate();
+// const hojeEmLuanda = DateTime.now()
+//   .setZone("Africa/Luanda")
+//   .startOf("day")
+//   .toJSDate();
 
 const prisma = new PrismaClient();
 
 
-async function checkExpiredDeposits() {
+export default async function VerificaDepositos() {
     try {
       
         console.log("Verificando depósitos vencidos até:", new Date().toISOString().split("T")[0] );
@@ -103,7 +103,7 @@ async function checkExpiredDeposits() {
 }
 
 // Agendando ambos os jobs para serem executados diariamente à meia-noite (fuso Angola)
-cron.schedule("0 0 * * *", () => {
-    console.log("Executando cron jobs para depósitos...");
-    checkExpiredDeposits();
-});
+// cron.schedule("0 0 * * *", () => {
+//     console.log("Executando cron jobs para depósitos...");
+//     checkExpiredDeposits();
+// });

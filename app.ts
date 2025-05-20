@@ -10,9 +10,10 @@ import Entidade from './Routes/Entidades'
 import cookieParser from 'cookie-parser';
 import Admin from './Routes/Admin';
 import Deposito from './Routes/Deposito';
-import "./Modules/Depositos";
-import "./Modules/VerificaCartão";
-import "./Modules/Lenvantamentos";
+import Agendamentos from './Routes/Agendamentos';
+//import "./Modules/Depositos";
+//import "./Modules/VerificaCartão";
+//import "./Modules/Lenvantamentos";
 import { Request, Response } from 'express';
 
 const port = process.env.PORT ? Number(process.env.PORT) : 5000;
@@ -49,7 +50,7 @@ app.use('/entidade',Entidade);
 app.use('/pdf',Pdfs);
 app.use('/admin',Admin)
 app.use('/deposito',Deposito);
-
+app.use('/agendamentos',Agendamentos);
 
 
 app.listen(port, () => {
