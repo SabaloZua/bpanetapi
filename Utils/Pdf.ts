@@ -36,64 +36,70 @@ interface dadosExtrato {
 
 // função para gerar comprovativo
 export const comprovativo = async (dados: dadosComprovativo): Promise<Buffer> => {
-  try {
-    const executablePath = await chromium.executablePath("https://github.com/Sparticuz/chromium/releases/download/v133.0.0/chromium-v133.0.0-pack.tar");
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath,
-      headless: true,
-    });
+    try {
+        const executablePath = await chromium.executablePath("https://github.com/Sparticuz/chromium/releases/download/v133.0.0/chromium-v133.0.0-pack.tar");
+        const browser = await puppeteer.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath,
+            headless: true,
+        });
 
-    const page = await browser.newPage();
-    const filePath1 = path.join(__dirname, "../", "Views", "comprovativo.ejs");
+        const page = await browser.newPage();
+        const filePath1 = path.join(__dirname, "../", "Views", "comprovativo.ejs");
 
-    const html = await ejs.renderFile(filePath1, {
-      nomecliente: dados.nomecliente,
-      ibanFrom: dados.ibanFrom,
-      contaFrom: dados.contaFrom,
-      benefeciario: dados.benefeciario,
-      ibaTO: dados.ibanTO,
-      montate: formatarmoeda(parseInt(dados.montate)),
-      descricao: dados.descricao,
-      idtransacao: dados.idtransacao,
-      data: formatDate(new Date()),
-      tipo: dados.tipo
-    });
+        const html = await ejs.renderFile(filePath1, {
+            nomecliente: dados.nomecliente,
+            ibanFrom: dados.ibanFrom,
+            contaFrom: dados.contaFrom,
+            benefeciario: dados.benefeciario,
+            ibaTO: dados.ibanTO,
+            montate: formatarmoeda(parseInt(dados.montate)),
+            descricao: dados.descricao,
+            idtransacao: dados.idtransacao,
+            data: formatDate(new Date()),
+            tipo: dados.tipo
+        });
 
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    const pdfBuffer = await page.pdf({
-      printBackground: true,
-      displayHeaderFooter: true,
-      headerTemplate: `<div></div>`,
-      footerTemplate: `<div style="width:100%; text-align:right; font-size:8px; margin-right:20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
-      width: '210mm',
-      height: '297mm',
-      margin: {
-        top: "40px",
-        bottom: "40px",
-        left: "50px",
-        right: "40px"
-      }
-      
-    });
+        await page.setContent(html, { waitUntil: 'networkidle0' });
+        const pdfBuffer = await page.pdf({
+            printBackground: true,
+            displayHeaderFooter: true,
+            headerTemplate: `<div></div>`,
+            footerTemplate: `<div style="width:100%; text-align:right; font-size:8px; margin-right:20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
+            width: '210mm',
+            height: '297mm',
+            margin: {
+                top: "40px",
+                bottom: "40px",
+                left: "50px",
+                right: "40px"
+            }
 
-    await browser.close();
-    return Buffer.from(pdfBuffer); // convert Uint8Array to Buffer
+        });
 
-  } catch (error) {
-    throw error;
-  }
+        await browser.close();
+        return Buffer.from(pdfBuffer); // convert Uint8Array to Buffer
+
+    } catch (error) {
+        throw error;
+    }
 }
 
 // função para gerar extrato
-export const extrato = async (dados: dadosExtrato): Promise<string> => {
+export const extrato = async (dados: dadosExtrato): Promise<Buffer> => {
     return new Promise(async (resolve, reject) => {
         try {
 
-            const broswer = await puppeteer.launch();
-            const page = await broswer.newPage();
+            const executablePath = await chromium.executablePath("https://github.com/Sparticuz/chromium/releases/download/v133.0.0/chromium-v133.0.0-pack.tar");
+            const browser = await puppeteer.launch({
+                args: chromium.args,
+                defaultViewport: chromium.defaultViewport,
+                executablePath,
+                headless: true,
+            });
 
+            const page = await browser.newPage();
             // caminho onde esta o formato do pdf a ser gerado
             const filePath1 = path.join(__dirname, "../", "Views", "extrato.ejs");
             // caminho onde esta  do pdf  gerado
@@ -119,12 +125,12 @@ export const extrato = async (dados: dadosExtrato): Promise<string> => {
                 async (err, html) => {
                     // Gera o PDF
                     await page.setContent(html, { waitUntil: 'networkidle0' });
-                    await page.pdf({
+                    const pdfBuffer = await page.pdf({
                         printBackground: true,
                         displayHeaderFooter: true,
                         headerTemplate: `<div></div>`,
                         footerTemplate: `<div style="width:100%; text-align:right; font-size:8px; margin-right:20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
-                       width: '210mm',
+                        width: '210mm',
                         height: '297mm',
                         margin: {
                             top: "5px",
@@ -135,8 +141,8 @@ export const extrato = async (dados: dadosExtrato): Promise<string> => {
                         },
                         path: 'extrato.pdf'
                     });
-                    await broswer.close();
-                    resolve(filePath2);
+                    await browser.close();
+                    return Buffer.from(pdfBuffer);
                 })
 
 

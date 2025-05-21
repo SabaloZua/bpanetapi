@@ -65,8 +65,10 @@ export default class Pdfs {
                 ? parseFloat(trasacao[0].t_saldoactual?.trim().replace(/\s/g, "")|| "0") - parseFloat(trasacao[0].t_credito || "0") 
                 :  parseFloat(trasacao[0].t_saldoactual?.trim().replace(/\s/g, "") || "0") + parseFloat(trasacao[0].t_debito)         }
 
-        const Extrato = await extrato(dadosExtrato);
-        res.download(Extrato, 'extrato.pdf')
+        const pdfBuffer = await extrato(dadosExtrato);
+       res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=Extrato.pdf');
+        res.send(pdfBuffer);
         }catch(erro){
             res.status(400).json({message:erro})
         }
