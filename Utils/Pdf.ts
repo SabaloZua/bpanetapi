@@ -139,7 +139,6 @@ export const extrato = async (dados: dadosExtrato): Promise<Buffer> => {
                             right: "20px"
 
                         },
-                        path: 'extrato.pdf'
                     });
                     await browser.close();
                     return Buffer.from(pdfBuffer);
