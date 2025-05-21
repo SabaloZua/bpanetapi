@@ -2,7 +2,7 @@ import path from 'path';
 import { formatarmoeda } from '../Utils/Moeda'
 import ejs from 'ejs'
 import puppeteer from "puppeteer-core";
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
 import { formatDate } from '../Utils/Datas';
 
 
@@ -38,10 +38,11 @@ interface dadosExtrato {
 export const comprovativo = async (dados: dadosComprovativo): Promise<string> => {
     return new Promise(async (resolve, reject) => {
         try {
+           const executablePath = await chromium.executablePath("https://github.com/Sparticuz/chromium/releases/download/v133.0.0/chromium-v133.0.0-pack.tar");
             const browser = await puppeteer.launch({
                 args: chromium.args,
                 defaultViewport: chromium.defaultViewport,
-                executablePath: await chromium.executablePath,
+                executablePath,
                 headless: true,
             });
             const page = await browser.newPage();
