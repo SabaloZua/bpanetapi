@@ -110,8 +110,10 @@ export default class Pdfs {
             tipo: dados?.t_descricao?.includes('Transferencia') ?  'trans': dados?.t_descricao?.includes('Levantamento')? "lev": "pag"
         }
 
-        const Comprovativo = await comprovativo(dadosComprovativo);
-        res.download(Comprovativo, 'comprovativo.pdf')
+        const pdfBuffer = await comprovativo(dadosComprovativo);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=comprovativo.pdf');
+        res.send(pdfBuffer);
     }
  
 }

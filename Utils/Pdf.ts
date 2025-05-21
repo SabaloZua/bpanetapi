@@ -35,59 +35,55 @@ interface dadosExtrato {
 }
 
 // função para gerar comprovativo
-export const comprovativo = async (dados: dadosComprovativo): Promise<string> => {
-    return new Promise(async (resolve, reject) => {
-        try {
-           const executablePath = await chromium.executablePath("https://github.com/Sparticuz/chromium/releases/download/v133.0.0/chromium-v133.0.0-pack.tar");
-            const browser = await puppeteer.launch({
-                args: chromium.args,
-                defaultViewport: chromium.defaultViewport,
-                executablePath,
-                headless: true,
-            });
-            const page = await browser.newPage();
-            const filePath1 = path.join(__dirname, "../", "Views", "comprovativo.ejs");
-            const filePath2: string = path.join(__dirname, "../", "comprovativo.pdf");
-
-            ejs.renderFile(filePath1, {
-                nomecliente: dados.nomecliente,
-                ibanFrom: dados.ibanFrom,
-                contaFrom: dados.contaFrom,
-                benefeciario: dados.benefeciario,
-                ibaTO: dados.ibanTO,
-                montate: formatarmoeda(parseInt(dados.montate)),
-                descricao: dados.descricao,
-                idtransacao: dados.idtransacao,
-                data: formatDate(new Date()),
-                tipo: dados.tipo
-            }, async (err, html) => {
-                if (err) {
-                    await browser.close();
-                    return reject(err);
-                }
-                await page.setContent(html, { waitUntil: 'networkidle0' });
-                await page.pdf({
-                    printBackground: true,
-                    displayHeaderFooter: true,
-                    headerTemplate: `<div></div>`,
-                    footerTemplate: `<div style="width:100%; text-align:right; font-size:8px; margin-right:20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
-                     width: '210mm',
-                    height: '297mm',
-                    margin: {
-                        top: "40px",
-                        bottom: "40px", // margem ajustada para acomodar o rodapé
-                        left: "50px",
-                        right: "40px"
-                    },
-                    path: filePath2
-                });
-                await browser.close();
-                resolve(filePath2);
-            });
-        } catch (error) {
-            reject(error);
-        }
+export const comprovativo = async (dados: dadosComprovativo): Promise<Buffer> => {
+  try {
+    const executablePath = await chromium.executablePath("https://github.com/Sparticuz/chromium/releases/download/v133.0.0/chromium-v133.0.0-pack.tar");
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath,
+      headless: true,
     });
+
+    const page = await browser.newPage();
+    const filePath1 = path.join(__dirname, "../", "Views", "comprovativo.ejs");
+
+    const html = await ejs.renderFile(filePath1, {
+      nomecliente: dados.nomecliente,
+      ibanFrom: dados.ibanFrom,
+      contaFrom: dados.contaFrom,
+      benefeciario: dados.benefeciario,
+      ibaTO: dados.ibanTO,
+      montate: formatarmoeda(parseInt(dados.montate)),
+      descricao: dados.descricao,
+      idtransacao: dados.idtransacao,
+      data: formatDate(new Date()),
+      tipo: dados.tipo
+    });
+
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    const pdfBuffer = await page.pdf({
+      printBackground: true,
+      displayHeaderFooter: true,
+      headerTemplate: `<div></div>`,
+      footerTemplate: `<div style="width:100%; text-align:right; font-size:8px; margin-right:20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
+      width: '210mm',
+      height: '297mm',
+      margin: {
+        top: "40px",
+        bottom: "40px",
+        left: "50px",
+        right: "40px"
+      }
+      
+    });
+
+    await browser.close();
+    return Buffer.from(pdfBuffer); // convert Uint8Array to Buffer
+
+  } catch (error) {
+    throw error;
+  }
 }
 
 // função para gerar extrato
