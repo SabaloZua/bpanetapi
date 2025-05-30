@@ -15,6 +15,7 @@ import Agendamentos from './Routes/Agendamentos';
 //import "./Modules/VerificaCartão";
 //import "./Modules/Lenvantamentos";
 import { Request, Response } from 'express';
+import 'dotenv/config'
 
 const port = process.env.PORT ? Number(process.env.PORT) : 5000;
 const app = express();
