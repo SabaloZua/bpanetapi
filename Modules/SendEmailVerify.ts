@@ -6,7 +6,6 @@ import nodemailer from 'nodemailer'
     host: "gmail",
     port:465,
     secure:true,
-    pool:true,
     auth: {
       user: process.env.EMAIL,
       pass: process.env.PASSEKEYEMAIL,
