@@ -6,6 +6,7 @@ import nodemailer from 'nodemailer'
     host: "gmail",
     port:465,
     secure:true,
+    pool:true,
     auth: {
       user: process.env.EMAIL,
       pass: process.env.PASSEKEYEMAIL,
@@ -20,7 +21,7 @@ import nodemailer from 'nodemailer'
  await  transporter.sendMail({  
   from: process.env.EMAIL,
   to: email,
-  subject: 'Alerta De Segurança',
+  subject: 'Alerta De Segurança BPA NET',
   text: ``,
   html: `  <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; border-radius: 10px; text-align: center;">
     <h1 style="color: #1674E3;">Alerta Dipositivo Desconhecio!</h1>
