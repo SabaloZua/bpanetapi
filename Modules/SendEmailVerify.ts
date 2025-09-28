@@ -26,17 +26,12 @@ import axios from 'axios';
               email:email
               }
             ],
-              subject: 'Verificação BPA NET',
-              htmlContent:`<html>
-               <body>
-                <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; border-radius: 10px; text-align: center;">
-                <h1 style="color:  #1674E3;">Confirme</h1>
-                <p style="margin-bottom: 20px;">Por favor,clique no link abaixo para continuar o seu processo de abertura de conta no BPA NET:</p>
-                <a href="${url}" style="display: inline-block; padding: 10px 20px; background-color:  #1674E3; color: #ffffff; text-decoration: none; border-radius: 5px;">Verificar Email</a>
-                  <p style="margin-top: 20px;">Se você não tentou realizar esta operação, entre em contacto com nosso suporte em <a href="https://bpa-net.vercel.app" style="color: #1674E3; text-decoration: underline;">Linha de Atendimento do BPA</a>. Por favor, não compartilhe este email com ninguém.</p>
-            </div>
-             </body> 
-             </html>`
+              subject: 'Cadastro no BPA NET - Verificação de Email',
+              templateId: 1,
+              params: {
+                // O NOME AQUI DEVE SER EXATAMENTE O QUE VOCÊ USOU NO TEMPLATE (ex: verification_url)
+              verification_url: url 
+              }
             
           };
           
