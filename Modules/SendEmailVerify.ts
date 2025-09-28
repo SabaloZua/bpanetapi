@@ -1,13 +1,17 @@
 import 'dotenv/config'
 import nodemailer from 'nodemailer'
+import axios from 'axios';
+ const apiKey = pro
+ cess.env.BREVO_API_KEY || '';
+    const urlemail = 'https://api.sendinblue.com/v3/smtp/email';
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.PASSEKEYEMAIL,
-    },
-  })
+  // const transporter = nodemailer.createTransport({
+  //   service: 'gmail',
+  //   auth: {
+  //     user: process.env.EMAIL,
+  //     pass: process.env.PASSEKEYEMAIL,
+  //   },
+  // })
 
  export const sendeemailverfy= async (email: string,  url: string) => { 
   try{
