@@ -24,7 +24,7 @@ export default class Deposito {
             res.status(400).json({ message: "Valores inválidos" });
             return;
         }
-        valor = parseFloat(valor);
+        valor = parseInt(valor);
         idconta = parseInt(idconta);
         iddeposito = parseInt(iddeposito);
 
